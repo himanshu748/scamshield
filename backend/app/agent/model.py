@@ -40,7 +40,12 @@ def create_strands_agent(*, model_id: str, region_name: str) -> Agent:
     return Agent(
         name="scamshield_investigator",
         description="Explains locally derived scam-risk evidence",
-        model=BedrockModel(model_id=model_id, region_name=region_name, temperature=0.0),
+        model=BedrockModel(
+            model_id=model_id,
+            region_name=region_name,
+            temperature=0.0,
+            max_tokens=512,
+        ),
         tools=[inspect_message, run_local_checks],
         system_prompt=SYSTEM_PROMPT,
         callback_handler=None,

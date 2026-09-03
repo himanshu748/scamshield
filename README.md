@@ -83,6 +83,8 @@ BEDROCK_MODEL_ID=your-model-id
 AWS_PROFILE=your-profile
 ```
 
+`amazon.nova-micro-v1:0` is an on-demand text-model example listed in `us-east-1`; verify access in your own account before enabling live mode. The Bedrock client explicitly caps each response at 512 tokens to bound quota reservation and cost.
+
 AWS usage may incur charges. Fixture mode is the recommended development and judging path. This repository does not claim an Amazon Bedrock AgentCore deployment; it integrates the open-source Strands Agents SDK with an optional Bedrock model provider.
 
 ## Verification
@@ -97,7 +99,7 @@ npm test -- --run
 npm run build
 ```
 
-Current automated coverage: 11 backend tests and 3 frontend interaction tests. The tests cover redaction regressions, all three risk outcomes, provenance, rejection, exact approval and the zero-before/one-after report invariant.
+Current automated coverage: 13 backend tests and 3 frontend interaction tests. The tests cover redaction regressions, all three risk outcomes, provenance, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
 
 The live responsive review covered 375, 768 and 1280 pixel widths, keyboard approval, light and dark themes and browser runtime errors. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the checked record.
 
