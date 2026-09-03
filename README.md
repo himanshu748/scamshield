@@ -4,7 +4,7 @@ ScamShield is an evidence-first agent for checking suspicious messages without o
 
 Built for the **Good Neighbor Agents** track of the Agents for Humans hackathon using the [Strands Agents SDK](https://strandsagents.com/).
 
-![ScamShield desktop concept](docs/design/scamshield-desktop.png)
+![ScamShield running investigation](docs/screenshots/desktop-investigation.png)
 
 ## The idea
 
@@ -99,7 +99,9 @@ npm test -- --run
 npm run build
 ```
 
-Current automated coverage: 13 backend tests and 3 frontend interaction tests. The tests cover redaction regressions, all three risk outcomes, provenance, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
+Current automated coverage: 13 backend tests and 4 frontend interaction tests. The tests cover redaction regressions, all three risk outcomes, provenance, semantic evidence-table structure, theme persistence, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
+
+Real running-app captures: [desktop investigation](docs/screenshots/desktop-investigation.png) and [mobile investigation](docs/screenshots/mobile-investigation.png).
 
 The live responsive review covered 375, 768 and 1280 pixel widths, keyboard approval, light and dark themes and browser runtime errors. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the checked record.
 
@@ -112,6 +114,7 @@ backend/app/assessment.py deterministic three-state risk assessment
 backend/app/storage/     redacted case and report persistence
 frontend/src/features/  evidence, investigation and verdict surfaces
 docs/design/             original interface concept
+docs/screenshots/        verified running-app captures
 ```
 
 ## Safety boundaries

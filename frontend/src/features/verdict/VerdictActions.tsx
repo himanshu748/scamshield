@@ -1,5 +1,5 @@
 import type { ScamCase } from "../../api/types";
-import { AlertIcon, CheckIcon, FileIcon } from "../../ui/Icons";
+import { AlertIcon, CheckIcon, ContextIcon, FileIcon } from "../../ui/Icons";
 
 const LABELS = { high_risk: "High risk", needs_context: "Needs context", low_risk: "Low risk" } as const;
 
@@ -14,7 +14,7 @@ export function VerdictActions({ activeCase, busy, onDecision }: Props) {
   return (
     <aside className={`verdict-edge ${level}`} aria-label="Verdict and safer actions">
       <div className="section-kicker"><span>3</span> Verdict &amp; actions</div>
-      <div className="verdict-mark">{level === "high_risk" ? <AlertIcon size={38} /> : <CheckIcon />}</div>
+      <div className="verdict-mark">{level === "high_risk" ? <AlertIcon size={38} /> : level === "needs_context" ? <ContextIcon /> : <CheckIcon />}</div>
       <h2>{LABELS[level]}</h2>
       <p className="verdict-summary">{level === "high_risk" ? "This message is likely a scam." : level === "low_risk" ? "No strong scam signal was found." : "There is not enough evidence to decide safely."}</p>
       <div className="score-line"><span>Risk score</span><strong>{activeCase.assessment.score} / 100</strong></div>

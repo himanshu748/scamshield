@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { analyzeMessage, decideReport, getDemoMessage } from "../api/client";
 import type { ScamCase, Scenario } from "../api/types";
@@ -6,6 +6,7 @@ import { EvidenceRail } from "../features/evidence/EvidenceRail";
 import { InvestigationTrace } from "../features/investigation/InvestigationTrace";
 import { VerdictActions } from "../features/verdict/VerdictActions";
 import { MoonIcon, SearchIcon, ShieldIcon } from "../ui/Icons";
+import { applyTheme, getInitialTheme, type Theme } from "../ui/theme";
 
 type ViewState = "idle" | "loading" | "ready" | "busy" | "error";
 
@@ -20,9 +21,26 @@ export function App() {
   const [scenario, setScenario] = useState<Scenario>("high-risk");
   const [activeCase, setActiveCase] = useState<ScamCase | null>(null);
   const [error, setError] = useState("");
-  const [dark, setDark] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
+
+  useEffect(() => applyTheme(theme), [theme]);
+  useEffect(() => {
+    const updateConnection = () => setOnline(navigator.onLine);
+    window.addEventListener("online", updateConnection);
+    window.addEventListener("offline", updateConnection);
+    return () => {
+      window.removeEventListener("online", updateConnection);
+      window.removeEventListener("offline", updateConnection);
+    };
+  }, []);
 
   async function analyze() {
+    if (!online) {
+      setError("You are offline. Reconnect before starting a new analysis.");
+      setState("error");
+      return;
+    }
     setState("loading");
     setError("");
     try {
@@ -38,6 +56,7 @@ export function App() {
   async function decide(choice: "approved" | "rejected") {
     if (!activeCase) return;
     setState("busy");
+    setError("");
     try {
       setActiveCase(await decideReport(activeCase, choice));
       setState("ready");
@@ -48,9 +67,7 @@ export function App() {
   }
 
   function toggleTheme() {
-    const next = !dark;
-    document.documentElement.dataset.theme = next ? "dark" : "light";
-    setDark(next);
+    setTheme((current) => current === "light" ? "dark" : "light");
   }
 
   return (
@@ -59,9 +76,10 @@ export function App() {
         <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><strong>ScamShield</strong><small>Protecting you, locally.</small></span></a>
         <span className="case-id">{activeCase ? `Case ${activeCase.id.replace("case-", "SS-").toUpperCase()}` : "New investigation"}</span>
         <span className="local-badge"><ShieldIcon />Local demo · nothing sent</span>
-        <button type="button" className="theme-action" aria-label={`Switch to ${dark ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
+        <button type="button" className="theme-action" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
       </header>
 
+      {!online && <div className="offline-banner" role="status"><ShieldIcon /><span><strong>Offline.</strong> An open case stays visible, but a new local analysis waits for reconnection.</span></div>}
       {error && <div className="error-banner" role="alert"><strong>Analysis stopped safely.</strong><span>{error}</span><button type="button" onClick={analyze}>Try again</button></div>}
 
       {state === "loading" ? (
@@ -72,7 +90,7 @@ export function App() {
           <form onSubmit={(event) => { event.preventDefault(); void analyze(); }}>
             <fieldset><legend>Choose a safe demo case</legend>{SCENARIOS.map((item) => <label key={item.id} className={scenario === item.id ? "selected" : ""}><input type="radio" name="scenario" value={item.id} checked={scenario === item.id} onChange={() => setScenario(item.id)} /><span><strong>{item.label}</strong><small>{item.hint}</small></span></label>)}</fieldset>
             <div className="intake-privacy"><ShieldIcon /><span><strong>Fictional evidence only</strong> These cases contain no real personal or financial data.</span></div>
-            <button type="submit" className="primary-action"><SearchIcon />Analyze selected message</button>
+            <button type="submit" className="primary-action" disabled={!online}><SearchIcon />Analyze selected message</button>
           </form>
         </main>
       ) : (

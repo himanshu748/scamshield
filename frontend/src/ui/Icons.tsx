@@ -12,3 +12,4 @@ export function SearchIcon({ size }: IconProps) { return <Icon size={size}><circ
 export function AlertIcon({ size }: IconProps) { return <Icon size={size}><path d="M12 3 2.5 20h19L12 3Z" /><path d="M12 9v4M12 17h.01" /></Icon>; }
 export function FileIcon() { return <Icon><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></Icon>; }
 export function CheckIcon() { return <Icon><path d="m5 12 4 4L19 6" /></Icon>; }
+export function ContextIcon() { return <Icon><circle cx="12" cy="12" r="9" /><path d="M9.8 9a2.3 2.3 0 1 1 3.3 2.1c-.8.4-1.1.9-1.1 1.9M12 17h.01" /></Icon>; }

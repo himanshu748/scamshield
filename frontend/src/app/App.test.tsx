@@ -23,7 +23,11 @@ const caseFixture: ScamCase = {
   report: null,
 };
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  window.localStorage.removeItem("scamshield-theme");
+  delete document.documentElement.dataset.theme;
+});
 
 function mockFetch() {
   vi.spyOn(globalThis, "fetch")
@@ -48,6 +52,15 @@ describe("ScamShield", () => {
     expect(screen.getByText("Checked evidence")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "High risk" })).toBeInTheDocument();
     expect(screen.getByText("Links opened")).toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader")).toHaveLength(3);
+    expect(screen.getAllByRole("cell")).toHaveLength(3);
+  });
+
+  it("persists an explicit theme choice", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Switch to dark theme" }));
+    expect(window.localStorage.getItem("scamshield-theme")).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
   });
 
   it("creates a report only after the explicit approval control", async () => {
