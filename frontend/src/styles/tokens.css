@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+  --paper: oklch(96.5% 0.006 25);
+  --paper-deep: oklch(92.5% 0.012 25);
+  --surface: oklch(99% 0.002 25);
+  --ink: oklch(25% 0.018 25);
+  --muted: oklch(45% 0.018 25);
+  --line: oklch(82% 0.018 25);
+  --line-strong: oklch(62% 0.022 25);
+  --risk: oklch(49% 0.16 32);
+  --risk-soft: oklch(92% 0.035 32);
+  --safe: oklch(43% 0.085 145);
+  --safe-soft: oklch(92% 0.035 145);
+  --unknown: oklch(46% 0.105 75);
+  --unknown-soft: oklch(93% 0.038 75);
+  --link: oklch(45% 0.13 255);
+  --serif: Iowan Old Style, Palatino Linotype, Book Antiqua, Palatino, Georgia, serif;
+  --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: oklch(20% 0.012 25);
+  --paper-deep: oklch(24% 0.016 25);
+  --surface: oklch(22% 0.012 25);
+  --ink: oklch(94% 0.008 25);
+  --muted: oklch(74% 0.015 25);
+  --line: oklch(34% 0.018 25);
+  --line-strong: oklch(53% 0.022 25);
+  --risk: oklch(72% 0.14 32);
+  --risk-soft: oklch(31% 0.065 32);
+  --safe: oklch(76% 0.09 145);
+  --safe-soft: oklch(30% 0.045 145);
+  --unknown: oklch(79% 0.11 75);
+  --unknown-soft: oklch(31% 0.055 75);
+  --link: oklch(78% 0.1 255);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; }
+button, a, summary, label { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible { outline: 3px solid color-mix(in srgb, var(--link) 65%, transparent); outline-offset: 3px; }
+button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .58; }

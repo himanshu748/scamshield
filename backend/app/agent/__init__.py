@@ -1,0 +1,1 @@
+"""ScamShield Strands integration."""
