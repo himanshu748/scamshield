@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { analyzeMessage, decideReport, getDemoMessage } from "../api/client";
 import type { ScamCase, Scenario } from "../api/types";
 import { EvidenceRail } from "../features/evidence/EvidenceRail";
+import { Landing } from "../features/landing/Landing";
 import { InvestigationTrace } from "../features/investigation/InvestigationTrace";
 import { VerdictActions } from "../features/verdict/VerdictActions";
 import { MoonIcon, SearchIcon, ShieldIcon } from "../ui/Icons";
 import { applyTheme, getInitialTheme, type Theme } from "../ui/theme";
 
 type ViewState = "idle" | "loading" | "ready" | "busy" | "error";
+type Surface = "landing" | "demo";
 
 const SCENARIOS: Array<{ id: Scenario; label: string; hint: string }> = [
   { id: "high-risk", label: "Bank impersonation", hint: "Urgent link + identity request" },
@@ -17,6 +19,7 @@ const SCENARIOS: Array<{ id: Scenario; label: string; hint: string }> = [
 ];
 
 export function App() {
+  const [surface, setSurface] = useState<Surface>("landing");
   const [state, setState] = useState<ViewState>("idle");
   const [scenario, setScenario] = useState<Scenario>("high-risk");
   const [activeCase, setActiveCase] = useState<ScamCase | null>(null);
@@ -70,12 +73,31 @@ export function App() {
     setTheme((current) => current === "light" ? "dark" : "light");
   }
 
+  if (surface === "landing") {
+    return (
+      <div className="app-shell">
+        <header className="topbar landing-topbar">
+          <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>Protecting you, locally.</small></span></a>
+          <nav className="landing-nav" aria-label="Section navigation">
+            <a href="#stages-title">How it checks</a>
+            <a href="#architecture-title">Architecture</a>
+            <a href="#boundaries-title">Boundaries</a>
+          </nav>
+          <button type="button" className="nav-action" onClick={() => setSurface("demo")}>Try the demo</button>
+          <button type="button" className="theme-action" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
+        </header>
+        <Landing onStart={() => setSurface("demo")} />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><strong>ScamShield</strong><small>Protecting you, locally.</small></span></a>
+        <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>Protecting you, locally.</small></span></a>
         <span className="case-id">{activeCase ? `Case ${activeCase.id.replace("case-", "SS-").toUpperCase()}` : "New investigation"}</span>
         <span className="local-badge"><ShieldIcon />Local demo · nothing sent</span>
+        <button type="button" className="nav-action subtle" onClick={() => setSurface("landing")}>Back to overview</button>
         <button type="button" className="theme-action" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
       </header>
 

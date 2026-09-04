@@ -4,7 +4,7 @@ ScamShield is an evidence-first agent for checking suspicious messages without o
 
 Built for the **Good Neighbor Agents** track of the Agents for Humans hackathon using the [Strands Agents SDK](https://strandsagents.com/).
 
-![ScamShield running investigation](docs/screenshots/desktop-investigation.png)
+![ScamShield public landing page](docs/screenshots/landing-desktop.png)
 
 ## The idea
 
@@ -99,11 +99,11 @@ npm test -- --run
 npm run build
 ```
 
-Current automated coverage: 13 backend tests and 4 frontend interaction tests. The tests cover redaction regressions, all three risk outcomes, provenance, semantic evidence-table structure, theme persistence, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
+Current automated coverage: 13 backend tests and 8 frontend interaction tests. The tests cover the landing-to-demo path, redaction regressions, all three risk outcomes, provenance, semantic evidence-table structure, theme persistence, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
 
-Real running-app captures: [desktop investigation](docs/screenshots/desktop-investigation.png) and [mobile investigation](docs/screenshots/mobile-investigation.png).
+Real running-app captures: [desktop landing page](docs/screenshots/landing-desktop.png), [mobile landing page](docs/screenshots/landing-mobile.png), [desktop investigation](docs/screenshots/desktop-investigation.png), and [mobile investigation](docs/screenshots/mobile-investigation.png).
 
-The live responsive review covered 375, 768 and 1280 pixel widths, keyboard approval, light and dark themes and browser runtime errors. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the checked record.
+The live responsive review covered 390, 768 and 1440 pixel widths, keyboard approval, light and dark themes, semantic table behavior, and browser runtime errors. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the checked record.
 
 ## Repository map
 

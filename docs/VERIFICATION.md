@@ -1,17 +1,17 @@
 # Verification record
 
-Verified locally in fixture mode on 2026-09-03.
+Verified locally in fixture mode on 2026-09-04.
 
 ## Automated checks
 
 - Backend: 13 tests passed.
 - Backend lint: Ruff passed.
-- Frontend: 4 interaction tests passed.
+- Frontend: 8 interaction tests passed.
 - Production frontend build: passed.
 - Dependency audit: 0 npm vulnerabilities.
 - Impeccable static design detector: 0 findings after the polish pass.
 
-The frontend coverage includes scenario intake, the evidence-to-verdict trace, semantic table roles, explicit report approval, and persisted theme choice.
+The frontend coverage includes the landing-to-demo path, scenario intake, the evidence-to-verdict trace, semantic table roles, explicit report approval, and persisted theme choice.
 
 ## Live workflow
 
@@ -30,15 +30,12 @@ The frontend coverage includes scenario intake, the evidence-to-verdict trace, s
 |---|---|
 | 390 px viewport | no overflow; single-column investigation |
 | 768 px viewport | no overflow; two-column evidence layout |
-| 1280 px viewport | no overflow; three-column case layout |
+| 1440 px viewport | no overflow; three-column landing layout |
 | Minimum button size | no button below 40 × 40 px |
 | Semantic interactions | no clickable `div` elements; claim table has explicit headers and cells |
 | Dark mode | rendered successfully with the approved result intact |
-| Body contrast | 14.51:1 |
-| Safety text contrast | 7.43:1 |
-| Verdict contrast | 6.45:1 |
-| Primary action contrast | 6.78:1 |
+| Color and focus treatment | reviewed in both themes; no exact ratio is claimed without a checked-in measurement artifact |
 
-The files in `docs/screenshots/` were captured from the running Vite application connected to its local FastAPI service. Desktop and 390 px mobile views show the same populated investigation; no claims, checks, or safety actions are hidden at the smaller viewport.
+The files in `docs/screenshots/` were captured from the running Vite application. The public landing page was captured at 1440 px and 390 px with one page-level heading, no browser console errors, and no horizontal overflow. The populated investigation captures use the local FastAPI fixture service; no claims, checks, source attribution, or safety actions are hidden at the smaller viewport.
 
-Open Design was requested but its signed desktop runtime and local service were not installed on this machine, so no Open Design output is claimed. Claude Code validation was also requested; the installed client could not authenticate because its OAuth session had expired. A later read-only Claude Desktop review was completed, and its verified findings drove this repair pass; no repository files were modified by Claude.
+Open Design was requested but its signed desktop runtime and local service were not installed on this machine, so no Open Design output is claimed. Claude Desktop later implemented the three landing-page passes within explicitly limited repository scope; Codex independently ran the tests, builds, responsive captures, and final claim audit documented here.

@@ -36,9 +36,46 @@ function mockFetch() {
     .mockResolvedValueOnce(new Response(JSON.stringify({ ...caseFixture, status: "report_generated", report: "# Local report" }), { status: 200 }));
 }
 
+function openDemo() {
+  render(<App />);
+  fireEvent.click(screen.getAllByRole("button", { name: "Try the demo" })[0]);
+}
+
+describe("ScamShield landing", () => {
+  it("opens on the landing page with navigation and a primary call to action", () => {
+    render(<App />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "ScamShield" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Take a breath before you answer/ })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Section navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "How it checks" })).toHaveAttribute("href", "#stages-title");
+    expect(screen.getAllByRole("button", { name: "Try the demo" }).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Bank impersonation")).not.toBeInTheDocument();
+  });
+
+  it("states the privacy and safety boundaries without claiming a deployment", () => {
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "How the agent works" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What it will not do" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Nothing is transmitted" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Links are never opened" })).toBeInTheDocument();
+    expect(screen.getByText(/does not claim an Amazon Bedrock\s+AgentCore deployment/)).toBeInTheDocument();
+    expect(screen.getByText(/Runs entirely on your machine in fixture mode/)).toBeInTheDocument();
+  });
+
+  it("moves between the landing page and the demo", () => {
+    openDemo();
+    expect(screen.getByText("Bank impersonation")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to overview" }));
+    expect(screen.getByRole("heading", { name: /Take a breath before you answer/ })).toBeInTheDocument();
+  });
+});
+
 describe("ScamShield", () => {
   it("shows all safe demo scenarios before analysis", () => {
-    render(<App />);
+    openDemo();
     expect(screen.getByText("Bank impersonation")).toBeInTheDocument();
     expect(screen.getByText("Unknown delivery")).toBeInTheDocument();
     expect(screen.getByText("Library notice")).toBeInTheDocument();
@@ -46,7 +83,7 @@ describe("ScamShield", () => {
 
   it("separates evidence, checks and verdict", async () => {
     mockFetch();
-    render(<App />);
+    openDemo();
     fireEvent.click(screen.getByRole("button", { name: "Analyze selected message" }));
     expect(await screen.findByText("Extracted claims")).toBeInTheDocument();
     expect(screen.getByText("Checked evidence")).toBeInTheDocument();
@@ -56,8 +93,18 @@ describe("ScamShield", () => {
     expect(screen.getAllByRole("cell")).toHaveLength(3);
   });
 
+  it("keeps every check source in the document so narrow layouts cannot drop evidence", async () => {
+    mockFetch();
+    openDemo();
+    fireEvent.click(screen.getByRole("button", { name: "Analyze selected message" }));
+    await screen.findByText("Checked evidence");
+
+    expect(screen.getByText("Offline allow-list")).toBeInTheDocument();
+    expect(screen.getByText("Local rules")).toBeInTheDocument();
+  });
+
   it("persists an explicit theme choice", () => {
-    render(<App />);
+    openDemo();
     fireEvent.click(screen.getByRole("button", { name: "Switch to dark theme" }));
     expect(window.localStorage.getItem("scamshield-theme")).toBe("dark");
     expect(document.documentElement.dataset.theme).toBe("dark");
@@ -65,7 +112,7 @@ describe("ScamShield", () => {
 
   it("creates a report only after the explicit approval control", async () => {
     mockFetch();
-    render(<App />);
+    openDemo();
     fireEvent.click(screen.getByRole("button", { name: "Analyze selected message" }));
     await screen.findByRole("button", { name: "Generate local report" });
     expect(screen.queryByText("Local report ready")).not.toBeInTheDocument();
