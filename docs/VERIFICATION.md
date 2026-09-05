@@ -4,7 +4,7 @@ Verified locally in fixture mode on 2026-09-04.
 
 ## Automated checks
 
-- Backend: 13 tests passed.
+- Backend: 22 tests passed (rechecked 2026-09-05).
 - Backend lint: Ruff passed.
 - Frontend: 8 interaction tests passed.
 - Production frontend build: passed.
@@ -14,6 +14,12 @@ Verified locally in fixture mode on 2026-09-04.
 The frontend coverage includes the landing-to-demo path, scenario intake, the evidence-to-verdict trace, semantic table roles, explicit report approval, and persisted theme choice.
 
 ## Live workflow
+
+The 2026-09-05 backend pass adds real Strands fixture tool execution, AgentCore HTTP validation, session cleanup on success/failure, and redaction before the runtime client sends content. ARM64 direct-code packaging succeeded. S3 returned `NotSignedUp` during deployment, and Nova returned a daily-token `ThrottlingException`. No successful cloud inference or runtime deployment is claimed. See [qualification record](QUALIFICATION.md).
+
+## Local fixture workflow
+
+Rechecked on 2026-09-05 using `python3 scripts/demo.py --skip-install --port 8203`: the production UI and API ran from one localhost process with temporary data. The bank example showed its redacted source and four checks, then generated a local report only after approval. The launcher forces scripted fixture mode even when the checkout is renamed.
 
 1. Analyzed the fictional bank impersonation message.
 2. Observed a high-risk result backed by three risky checks and one unknown check.

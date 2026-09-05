@@ -1,6 +1,9 @@
 import uuid
 from typing import Literal, Protocol
 
+from strands import tool
+
+from app.agent.fixture_model import fixture_advice
 from app.assessment import assess
 from app.domain.models import AgentAdvice, CaseEvent, MessageRequest, ScamCase
 from app.storage.sqlite import SQLiteStore
@@ -16,13 +19,23 @@ class Advisor(Protocol):
 
 class FixtureAdvisor:
     def advise(self, request: MessageRequest) -> AgentAdvice:
-        claims = extract_claims(request)
-        checks = check_evidence(request, claims)
-        risky = [check.id for check in checks if check.result == "risky"]
-        return AgentAdvice(
-            summary="Evidence is prioritized by direct user impact; uncertainty remains visible.",
-            prioritized_check_ids=risky or [check.id for check in checks],
-        )
+        return fixture_advice(request.model_dump(mode="json"), fixture_check, AgentAdvice)
+
+
+@tool
+def fixture_check(payload: dict) -> dict:
+    """Read redacted message evidence and prioritize the deterministic fixture checks."""
+    return _fixture_check(MessageRequest.model_validate(payload)).model_dump(mode="json")
+
+
+def _fixture_check(request: MessageRequest) -> AgentAdvice:
+    claims = extract_claims(request)
+    checks = check_evidence(request, claims)
+    risky = [check.id for check in checks if check.result == "risky"]
+    return AgentAdvice(
+        summary="Evidence is prioritized by direct user impact; uncertainty remains visible.",
+        prioritized_check_ids=risky or [check.id for check in checks],
+    )
 
 
 class ScamWorkflow:

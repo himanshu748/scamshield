@@ -3,6 +3,8 @@ from typing import Any
 from strands import Agent, tool
 from strands.models import BedrockModel
 
+from app.agent.budget import ModelCallBudget, isolated_agent
+from app.agent.runtime_client import RuntimeClient
 from app.domain.models import AgentAdvice, MessageRequest
 from app.tools.evidence import check_evidence, extract_claims
 from app.tools.redaction import redact_text
@@ -49,6 +51,7 @@ def create_strands_agent(*, model_id: str, region_name: str) -> Agent:
         tools=[inspect_message, run_local_checks],
         system_prompt=SYSTEM_PROMPT,
         callback_handler=None,
+        hooks=[ModelCallBudget()],
     )
 
 
@@ -57,7 +60,9 @@ class StrandsAdvisor:
         self.agent = agent
 
     def advise(self, request: MessageRequest) -> AgentAdvice:
-        result = self.agent(
+        agent = isolated_agent(self.agent)
+        self.last_run_agent = agent
+        result = agent(
             "Analyze this message with the read-only tools. "
             f"Sender: {request.sender}\nMessage: {request.content}",
             structured_output_model=AgentAdvice,
@@ -65,3 +70,14 @@ class StrandsAdvisor:
         if not isinstance(result.structured_output, AgentAdvice):
             raise ValueError("Strands agent did not return structured advice")
         return result.structured_output
+
+
+class AgentCoreAdvisor:
+    def __init__(self, arn: str, region: str):
+        self.runtime = RuntimeClient(arn, region)
+
+    def advise(self, request: MessageRequest) -> AgentAdvice:
+        redacted = request.model_copy(
+            update={"sender": redact_text(request.sender), "content": redact_text(request.content)}
+        )
+        return AgentAdvice.model_validate(self.runtime.invoke(redacted.model_dump(mode="json")))

@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.agent.model import StrandsAdvisor, create_strands_agent
+from app.agent.model import AgentCoreAdvisor, StrandsAdvisor, create_strands_agent
 from app.agent.orchestrator import ScamWorkflow
 from app.config import Settings
 from app.domain.models import MessageRequest, ScamCase
@@ -56,14 +56,19 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
     active_store = store or SQLiteStore(active_settings.database_path)
     advisor = None
     if not active_settings.fixture_mode:
-        if active_settings.bedrock_model_id is None:
-            raise ValueError("BEDROCK_MODEL_ID is required when fixture mode is disabled")
-        advisor = StrandsAdvisor(
-            create_strands_agent(
-                model_id=active_settings.bedrock_model_id,
-                region_name=active_settings.aws_region,
+        if active_settings.agentcore_runtime_arn:
+            advisor = AgentCoreAdvisor(
+                active_settings.agentcore_runtime_arn, active_settings.aws_region
             )
-        )
+        elif active_settings.bedrock_model_id is None:
+            raise ValueError("BEDROCK_MODEL_ID is required when fixture mode is disabled")
+        else:
+            advisor = StrandsAdvisor(
+                create_strands_agent(
+                    model_id=active_settings.bedrock_model_id,
+                    region_name=active_settings.aws_region,
+                )
+            )
     workflow = ScamWorkflow(store=active_store, advisor=advisor)
 
     @application.get("/api/health")
@@ -106,6 +111,17 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
     @application.get("/api/cases/{case_id}/report-count")
     async def report_count(case_id: str) -> dict[str, int]:
         return {"count": active_store.report_count(case_id)}
+
+    if active_settings.serve_frontend:
+        from pathlib import Path
+
+        from app.web import mount_demo_ui
+
+        mount_demo_ui(
+            application,
+            fixture_mode=active_settings.fixture_mode,
+            directory=Path(__file__).resolve().parents[2] / "frontend" / "dist",
+        )
 
     return application
 

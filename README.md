@@ -25,6 +25,18 @@ The demo contains only fictional evidence and runs without an AWS account by def
 - Fixture mode provides a complete, zero-model-cost demo.
 - Optional Amazon Bedrock reasoning uses a real Strands `Agent`, typed structured output and read-only tools.
 
+## One-command judging demo
+
+Prerequisites: Python 3.11+, uv, Node.js 20.19+ (22.12+ recommended), npm and Git.
+
+```bash
+python3 scripts/demo.py
+```
+
+Open `http://127.0.0.1:8000`. This installs locked dependencies, builds the frontend, and serves the UI and API from one local process. It forces scripted fixture mode even if your environment enables AWS, uses temporary demo data, and removes that data when stopped with Ctrl+C. First-time dependency installation needs internet access; the demo itself does not call a model. Use `--port 8201` to avoid a port conflict. After installation, `--skip-install` reuses dependencies.
+
+This is a local judging build, not a public hosted service. Live Bedrock inference and AgentCore deployment remain unverified.
+
 ## Architecture
 
 ```text
@@ -54,7 +66,7 @@ The agent is not allowed to browse suspicious links, contact anyone or create a 
 Prerequisites: Python 3.11+, [uv](https://docs.astral.sh/uv/) and Node.js 20+.
 
 ```bash
-git clone <your-public-repository-url>
+git clone https://github.com/himanshu748/scamshield.git
 cd scamshield
 
 cd backend
@@ -99,11 +111,17 @@ npm test -- --run
 npm run build
 ```
 
-Current automated coverage: 13 backend tests and 8 frontend interaction tests. The tests cover the landing-to-demo path, redaction regressions, all three risk outcomes, provenance, semantic evidence-table structure, theme persistence, rejection, exact approval, Bedrock configuration and the zero-before/one-after report invariant.
+Current automated coverage: 22 backend tests and 8 frontend interaction tests. The tests cover Strands fixture tool execution, the AgentCore HTTP contract, session cleanup, redaction before network transmission, local-only demo serving, the landing-to-demo path, all three risk outcomes, provenance, semantic evidence-table structure, theme persistence, rejection, exact approval and the zero-before/one-after report invariant.
 
 Real running-app captures: [desktop landing page](docs/screenshots/landing-desktop.png), [mobile landing page](docs/screenshots/landing-mobile.png), [desktop investigation](docs/screenshots/desktop-investigation.png), and [mobile investigation](docs/screenshots/mobile-investigation.png).
 
 The live responsive review covered 390, 768 and 1440 pixel widths, keyboard approval, light and dark themes, semantic table behavior, and browser runtime errors. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the checked record.
+
+## Hackathon technology and outstanding requirements
+
+The free demo now runs a real Strands Agent with a scripted model provider. The optional AgentCore service uses Nova Micro for advisory reasoning; the local client redacts input before transmission and retains deterministic risk scoring and report approval. See [AgentCore setup](docs/AGENTCORE.md).
+
+The [qualification record](docs/QUALIFICATION.md) tracks pending AWS access, public video, final Devpost entry and article publication. The Builder Center profile is verified. The [architecture PNG](docs/architecture.png), [Builder Center article draft](docs/BUILDER_POST.md) and [demo video outline](docs/DEMO_SCRIPT.md) are prepared. The current prototype handles individual cases; a shared community inbox is not implemented.
 
 ## Repository map
 
