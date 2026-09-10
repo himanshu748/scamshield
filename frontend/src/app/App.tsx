@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ConnectionDetails } from "../features/connection/ConnectionDetails";
 
 import { analyzeMessage, decideReport, getDemoMessage, listCases, removeCase } from "../api/client";
 import type { MessageRequest, ScamCase, Scenario } from "../api/types";
@@ -156,13 +157,14 @@ export function App() {
       </header>
 
       <div className="workspace-tools"><span>Message review <small>Local checks · Review before reporting</small></span><button type="button" disabled={busy} onClick={() => { closeHistory(); setActiveCase(null); setError(""); setUtilityError(null); setRetryChoice(null); pendingRequest.current = null; setState("idle"); }}>New message</button><button type="button" disabled={busy || savedLoading} onClick={loadSaved}>{savedLoading ? "Loading cases…" : "Saved cases"}</button>{activeCase && <button type="button" disabled={busy} onClick={deleteCase}>{deleting ? "Deleting…" : "Delete case"}</button>}</div>
+      <ConnectionDetails />
       {utilityError && <div className="error-banner" role="alert"><span>{utilityError.message}</span><button type="button" onClick={utilityError.retry}>Retry request</button><button type="button" onClick={() => setUtilityError(null)}>Dismiss</button></div>}
       {saved && <SavedCases cases={saved} loading={savedLoading} busy={busy} onClose={closeHistory} onOpen={item => { if (mutationPending.current) return; setActiveCase(item); closeHistory(); setError(""); setUtilityError(null); setRetryChoice(null); pendingRequest.current = null; setState("ready"); }} />}
       {!online && <div className="offline-banner" role="status"><ShieldIcon /><span><strong>Internet unavailable.</strong> Local message checks can still run while this device’s service is running.</span></div>}
       {error && <div className="error-banner" role="alert"><strong>Request could not finish.</strong><span>{error}</span><button type="button" disabled={busy} onClick={() => retryChoice ? void decide(retryChoice) : void analyze()}>Try again</button></div>}
 
       {state === "loading" ? (
-        <main id="main" className="loading-case" aria-live="polite" aria-busy="true"><SearchIcon size={34} /><h1>Checking the message locally</h1><p>Redacting sensitive fields, extracting claims and running offline checks.</p><div className="scan-lines" aria-hidden="true"><span /><span /><span /><span /></div></main>
+        <main id="main" className="loading-case" aria-live="polite" aria-busy="true"><SearchIcon size={34} /><h1>Checking the message</h1><p>Redacting sensitive fields, evaluating local checks and preparing advice.</p><div className="scan-lines" aria-hidden="true"><span /><span /><span /><span /></div></main>
       ) : !activeCase ? (
         <><main id="main" className="intake-case">
           <section className="intake-copy"><h1>Check before you respond.</h1><p>Bring the message that concerns you. Inspect the warning signs, missing context and safer next steps without visiting its links.</p><dl className="intake-boundaries"><div><dt>Observe, don’t interact</dt><dd>Links are read as text. Their destinations are never visited.</dd></div><div><dt>See what is still unknown</dt><dd>A familiar sender name is not proof of identity.</dd></div><div><dt>Keep control of the record</dt><dd>Review redacted evidence, choose a report, or delete the case.</dd></div></dl><p className="intake-limits">Risk checks use local rules; optional model advice depends on server configuration. A low-risk result is not a safety guarantee.</p></section>

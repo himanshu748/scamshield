@@ -1,23 +1,34 @@
-# ScamShield demo video outline
+# ScamShield recording plan
 
-Status: recording and public upload pending. The final video must be public on YouTube or Vimeo and at most five minutes.
+Target length: about 4 minutes 15 seconds, below the five-minute limit. Public YouTube/Vimeo upload is still pending.
 
-Recording update, September 10: real Qwen3-8B tool workflows were verified on Modal
-on September 9. The endpoint is deliberately stopped. Resume it only with approval,
-warm it, and record fresh execution. When recording Qwen, identify Qwen + Strands
-accurately rather than reading any older fixture-only narration below. When using
-the free scripted demo, label it scripted throughout. Use architecture-current.png.
+## Recording prerequisites
 
-| Time | Show | Explain |
+The Qwen endpoint is stopped at the owner's request. Resume only with explicit approval, warm it, run the real workflow smoke check, then record a fresh run. Do not start inference for rehearsal.
+
+Use a fictional input and a temporary database. Hide private tabs, credentials and account information. Open Connection details to show configuration, but do not call that a successful model test. For a scripted rehearsal, keep "Scripted responses — no model inference" visible in the recording; do not present that clip as new live-model evidence.
+
+## Pitch
+
+ScamShield helps someone and their trusted helper review a suspicious message without opening its links. It keeps warnings and unknowns separate, then creates a local report only when the user approves.
+
+## Screen sequence
+
+| Time | Screen/action | Narration cue |
 | --- | --- | --- |
-| 0:00–0:25 | Message intake | A person brings a suspicious message to a trusted community helper. Present this as the intended handoff, not claimed group adoption or a shared inbox. |
-| 0:25–0:50 | Paste a fictional email | Include a pressure phrase, a credential request and an example.invalid URL. State the example is synthetic. No links are visited. |
-| 0:50–1:45 | Run the application and inspect evidence | Deterministic checks + three-state risk score; show where the source evidence comes from |
-| 1:45–2:30 | Unknown evidence, then approve report | A sender-confirmation checkbox is the user's assertion, not authentication. Show that warnings remain prominent despite that assertion. |
-| 2:30–3:15 | Download and open Markdown report | Show every check/source, separate unknowns, safety steps and timestamp provenance. Original message/sender are omitted; review for missed details before sharing. Nothing is sent automatically. |
-| 3:15–3:45 | Architecture + Strands boundary | Advice supplies explanation and ordering within severity groups. Deterministic checks own the risk index. Label scripted SDK execution; do not call it live model inference. |
-| 3:45–4:15 | Reopen saved case and explain limits | The rule index is not a fraud probability. There is no reputation lookup, authenticated sender check or shared community inbox. |
+| 0:00–0:30 | Show message intake. | A person wants a trusted helper to assess a suspicious message. Explain that the current product supports a handoff rather than a shared group inbox. |
+| 0:30–1:15 | Enter a synthetic message with an example.invalid link. | Show local redaction and visible evidence. No suspicious URL is opened. |
+| 1:15–2:00 | Inspect warning checks, unknowns and safer next steps. | The risk index comes from local rules. Strands supplies bounded advice; low risk is not proof of authenticity. |
+| 2:00–2:45 | Generate the report, download and open it. | Show check sources, unresolved evidence and privacy warnings. Nothing is sent to another person automatically. |
+| 2:45–3:25 | Check an ambiguous message or inspect a separately labeled saved example. | Show that missing evidence stays unknown. User-supplied sender confirmation is not authentication. |
+| 3:25–4:10 | Show the redaction and approval architecture. | Identify Strands and the actual model provider. End on the helper handoff and the report's limitations. |
 
-Do not show an AgentCore deployment or live Nova response until one has been verified. Mention Codex and Claude as development assistants. Keep AWS console credentials, account tokens, personal data and private browser tabs out of the recording.
+## Final checks
 
-Required publication: attach the public YouTube/Vimeo URL to the Devpost project, then watch the entire uploaded video to verify audio/text readability and duration.
+- Show a useful output and one difficult case, not only a landing page.
+- Name Strands Agents SDK and the provider used in the captured run. Use architecture-current.png.
+- Distinguish source evidence, model advice, deterministic validation and human approval.
+- Rule-based guidance, not a calibrated fraud probability. No live domain reputation or authenticated sender checks, shared community inbox, or automatic reporting.
+- Disclose Codex as a development assistant; do not invent user adoption, results or deployments.
+- Watch the entire uploaded video while signed out. Confirm public playback, readable text, intelligible audio and a duration under five minutes.
+- Copy the verified public video URL into the submission. Recording a file alone does not complete this requirement.

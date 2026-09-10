@@ -34,7 +34,7 @@ export function VerdictActions({ activeCase, busy, onDecision }: Props) {
           <button className="text-action" type="button" disabled={busy} onClick={() => onDecision("rejected")}>Skip report</button>
         </section>
       ) : activeCase.status === "report_generated" ? (
-        <section className="report-result" aria-live="polite"><CheckIcon /><div><h3>Local report ready</h3><p>Saved to this case. Nothing was transmitted.</p></div><button className="download-report" type="button" onClick={downloadReport}>Download report</button><details><summary>Preview report</summary><pre>{activeCase.report}</pre></details></section>
+        <section className="report-result" aria-live="polite"><CheckIcon /><div><h3>Local report ready</h3><p>Saved to this case. The report was not sent.</p></div><button className="download-report" type="button" onClick={downloadReport}>Download report</button><details><summary>Preview report</summary><pre>{activeCase.report}</pre></details></section>
       ) : <section className="report-result"><div><h3>No report generated</h3><p>The case remains available locally.</p></div></section>}
     </aside>
   );
