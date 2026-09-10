@@ -10,7 +10,7 @@
 .local-badge { justify-self: end; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border: 1px solid color-mix(in srgb, var(--safe) 45%, var(--line)); background: var(--safe-soft); color: var(--safe); font-size: 12px; font-weight: 700; }
 .theme-action { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 0; background: transparent; color: var(--ink); transition: background-color 100ms ease-out, transform 100ms ease-out; }
 .theme-action:hover { background: var(--paper-deep); }.theme-action:active { transform: translateY(1px); }
-.primary-action { min-height: 46px; border: 1px solid var(--risk); background: var(--risk); color: white; padding: 11px 17px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 800; box-shadow: 0 4px 0 color-mix(in srgb, var(--risk) 72%, black); transition: transform 100ms ease-out, box-shadow 100ms ease-out, filter 100ms ease-out; }
+.primary-action { min-height: 46px; border: 1px solid var(--risk); background: var(--risk); color: var(--on-risk); padding: 11px 17px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 800; box-shadow: 0 4px 0 color-mix(in srgb, var(--risk) 72%, black); transition: transform 100ms ease-out, box-shadow 100ms ease-out, filter 100ms ease-out; }
 .primary-action:active { transform: translateY(2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--risk) 72%, black); }
 @media (hover: hover) { .primary-action:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 6px 0 color-mix(in srgb, var(--risk) 72%, black); } }
 .error-banner { margin: 16px 30px 0; padding: 12px 14px; display: flex; align-items: center; gap: 9px; border: 1px solid var(--risk); background: var(--risk-soft); color: var(--ink); }
@@ -67,7 +67,7 @@
 .trace-heading p { margin: 2px 0 18px; color: var(--muted); font: 14px/1.5 var(--serif); }
 .trace-stage { position: relative; padding: 28px 0 30px 34px; border-left: 1px solid var(--line-strong); }
 .trace-stage:not(.final-stage) { border-bottom: 1px dashed var(--line-strong); }
-.stage-marker { position: absolute; left: -13px; top: 29px; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--risk); color: white; font-size: 10px; font-weight: 900; box-shadow: 0 0 0 6px var(--surface); }
+.stage-marker { position: absolute; left: -13px; top: 29px; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--risk); color: var(--on-risk); font-size: 10px; font-weight: 900; box-shadow: 0 0 0 6px var(--surface); }
 .trace-stage header > span { color: var(--risk); text-transform: uppercase; letter-spacing: .13em; font-weight: 900; font-size: 10px; }
 .trace-stage h2 { margin: 5px 0 4px; font: 700 27px/1.1 var(--serif); text-wrap: balance; }
 .trace-stage header p { margin: 0 0 18px; color: var(--muted); font: 14px/1.5 var(--serif); }

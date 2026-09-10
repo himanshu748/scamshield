@@ -1,13 +1,32 @@
 import type { MessageRequest, ScamCase, Scenario } from "./types";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, init);
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({ detail: "Unexpected service error" }));
-    throw new Error(body.detail ?? "Unexpected service error");
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 30_000);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    if (!response.ok) {
+      const body: { detail?: unknown; message?: unknown } = await response.json().catch(() => ({}));
+      const message = typeof body.detail === "string" ? body.detail
+        : typeof body.message === "string" ? body.message
+        : response.status === 422 ? "Check the message fields and try again."
+        : "The local service could not complete this request. Please try again.";
+      throw new Error(message);
+    }
+    return await response.json() as T;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("The local service took too long. Check saved cases before retrying; your request may have completed.");
+    }
+    if (error instanceof TypeError) throw new Error("Cannot reach the local service. Check that it is running and try again.");
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  return response.json() as Promise<T>;
 }
+
+export const listCases = () => request<ScamCase[]>("/api/cases");
+export const removeCase = (id: string) => request<{ deleted: boolean }>(`/api/cases/${encodeURIComponent(id)}`, { method: "DELETE" });
 
 export function getDemoMessage(scenario: Scenario) {
   return request<MessageRequest>(`/api/demo-messages/${scenario}`);

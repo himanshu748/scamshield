@@ -1,8 +1,114 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "./App";
 import type { ScamCase } from "../api/types";
+
+it("restores a failed custom request and allows correcting it", async () => {
+  window.location.hash = "";
+  const fetcher = vi.spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(new Response(JSON.stringify({ detail: "Temporary failure" }), { status: 503 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify(caseFixture), { status: 201 }));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText("Message type"), { target: { value: "email" } });
+  fireEvent.change(screen.getByLabelText("Sender (optional)"), { target: { value: "My sender" } });
+  fireEvent.change(screen.getByLabelText("Message to check"), { target: { value: "Original message" } });
+  fireEvent.click(screen.getByRole("checkbox", { name: /independently confirmed/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Check message" }));
+  expect(await screen.findByLabelText("Message to check")).toHaveValue("Original message");
+  expect(screen.getByLabelText("Sender (optional)")).toHaveValue("My sender");
+  expect(screen.getByLabelText("Message type")).toHaveValue("email");
+  expect(screen.getByRole("checkbox", { name: /independently confirmed/ })).toBeChecked();
+  fireEvent.change(screen.getByLabelText("Message to check"), { target: { value: "Corrected message" } });
+  fireEvent.click(screen.getByRole("button", { name: "Check message" }));
+  await screen.findByText("Checked evidence");
+  expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toMatchObject({ content: "Corrected message", sender: "My sender", channel: "email", sender_confirmed: true });
+});
+
+it("retries a failed delete without analyzing another message", async () => {
+  window.location.hash = "";
+  vi.spyOn(window, "confirm").mockReturnValue(true);
+  const fetcher = vi.spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(new Response(JSON.stringify([caseFixture]), { status: 200 }))
+    .mockResolvedValueOnce(new Response("{}", { status: 503 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ deleted: true }), { status: 200 }));
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Saved cases" }));
+  fireEvent.click(await screen.findByRole("button", { name: "case-demo: high risk" }));
+  fireEvent.click(screen.getByRole("button", { name: "Delete case" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Retry request" }));
+  await screen.findByLabelText("Message to check");
+  expect(fetcher.mock.calls.map(call => [call[0], call[1]?.method || "GET"])).toEqual([
+    ["/api/cases", "GET"], ["/api/cases/case-demo", "DELETE"], ["/api/cases/case-demo", "DELETE"]
+  ]);
+});
+
+it("does not reopen history when a closed request finishes late", async () => {
+  window.location.hash = "";
+  let finish!: (value: Response) => void;
+  vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Saved cases" }));
+  expect(screen.getByText("Loading saved cases…")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Close saved cases" }));
+  finish(new Response(JSON.stringify([caseFixture]), { status: 200 }));
+  await waitFor(() => expect(screen.queryByRole("heading", { name: "Saved cases" })).not.toBeInTheDocument());
+  expect(screen.getByLabelText("Message to check")).toBeInTheDocument();
+});
+
+it("prevents switching cases or duplicating a mutation while review is pending", async () => {
+  window.location.hash = "";
+  let finish!: (value: Response) => void;
+  const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText("Message to check"), { target: { value: "Review this message" } });
+  fireEvent.click(screen.getByRole("button", { name: "Check message" }));
+  expect(screen.getByRole("button", { name: "New message" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Saved cases" })).toBeDisabled();
+  finish(new Response(JSON.stringify(caseFixture), { status: 201 }));
+  await screen.findByText("Checked evidence");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+it("allows local analysis when the browser reports no internet", async () => {
+  window.location.hash = "";
+  vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(caseFixture), { status: 201 }));
+  render(<App />);
+  expect(screen.getByText("Internet unavailable.")).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Message to check"), { target: { value: "Local-only review" } });
+  fireEvent.click(screen.getByRole("button", { name: "Check message" }));
+  await screen.findByText("Checked evidence");
+});
+
+it("places safer actions before the detailed trace in reading and keyboard order", async () => {
+  window.location.hash = "";
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(caseFixture), { status: 201 }));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText("Message to check"), { target: { value: "Review this message" } });
+  fireEvent.click(screen.getByRole("button", { name: "Check message" }));
+  const actions = await screen.findByRole("complementary", { name: "Verdict and safer actions" });
+  const trace = screen.getByRole("region", { name: "Investigation trace" });
+  expect(actions.compareDocumentPosition(trace) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Verdict & actions", level: 2 })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Checked evidence", level: 3 })).toBeInTheDocument();
+});
+
+it("filters saved cases by redacted text and assessment", async () => {
+  window.location.hash = "";
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify([
+    caseFixture,
+    { ...caseFixture, id: "case-library", redacted_sender: "Library", redacted_content: "Your book is due", assessment: { ...caseFixture.assessment, level: "needs_context" } },
+  ]), { status: 200 }));
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Saved cases" }));
+  fireEvent.change(await screen.findByLabelText("Find a case"), { target: { value: "book" } });
+  expect(screen.getByRole("button", { name: "case-library: needs context" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "case-demo: high risk" })).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Assessment"), { target: { value: "high_risk" } });
+  expect(screen.getByText(/No cases match these filters/)).toBeInTheDocument();
+});
+
 
 const message = { channel: "sms", sender: "+1 833 555 0198", content: "URGENT verify at https://fake.test", received_at: "2026-09-03T09:42:00Z" } as const;
 const caseFixture: ScamCase = {
@@ -23,6 +129,8 @@ const caseFixture: ScamCase = {
   report: null,
 };
 
+beforeEach(() => { window.location.hash = "#overview"; });
+
 afterEach(() => {
   vi.restoreAllMocks();
   window.localStorage.removeItem("scamshield-theme");
@@ -38,7 +146,8 @@ function mockFetch() {
 
 function openDemo() {
   render(<App />);
-  fireEvent.click(screen.getAllByRole("button", { name: "Try the demo" })[0]);
+  fireEvent.click(screen.getAllByRole("button", { name: "Check a message" })[0]);
+  fireEvent.click(screen.getByText("Explore example messages"));
 }
 
 describe("ScamShield landing", () => {
@@ -49,7 +158,7 @@ describe("ScamShield landing", () => {
     expect(screen.getByRole("heading", { name: /Take a breath before you answer/ })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Section navigation" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "How it checks" })).toHaveAttribute("href", "#stages-title");
-    expect(screen.getAllByRole("button", { name: "Try the demo" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "Check a message" }).length).toBeGreaterThan(0);
     expect(screen.queryByText("Bank impersonation")).not.toBeInTheDocument();
   });
 
@@ -58,7 +167,7 @@ describe("ScamShield landing", () => {
 
     expect(screen.getByRole("heading", { name: "How the agent works" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "What it will not do" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Nothing is transmitted" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "No automatic reporting" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Links are never opened" })).toBeInTheDocument();
     expect(screen.getByText(/does not claim an Amazon Bedrock\s+AgentCore deployment/)).toBeInTheDocument();
     expect(screen.getByText(/Runs entirely on your machine in fixture mode/)).toBeInTheDocument();

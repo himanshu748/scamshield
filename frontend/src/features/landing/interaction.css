@@ -1,0 +1,16 @@
+.message-paper mark { background: transparent; border-bottom: 1px dashed var(--line-strong); transition: background-color 180ms ease-out, border-color 180ms ease-out; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.message-paper mark.selected-signal { background: var(--unknown-soft); border-bottom: 2px solid var(--unknown); }
+.signal-explorer { padding: 0 20px; }
+.signal-explorer > p { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+.signal-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+.signal-controls button { min-height: 44px; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--ink); font-size: 12px; cursor: pointer; transition: background-color 150ms ease-out, border-color 150ms ease-out; }
+.signal-controls button:hover { background: var(--paper-deep); }
+.signal-controls button[aria-pressed="true"] { background: var(--unknown-soft); border-color: var(--unknown); }
+.signal-explanation { min-height: 146px; padding: 18px 0; }
+.signal-explanation h3 { font: 600 20px/1.4 var(--serif); margin: 0 0 8px; color: var(--ink); }
+.signal-explanation p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .signal-explanation > div { animation: signal-focus 250ms ease-out; }
+  @keyframes signal-focus { from { opacity: .35; } to { opacity: 1; } }
+}
+@media (max-width: 600px) { .signal-explorer { padding: 0 16px; } .signal-explanation { min-height: 174px; } }

@@ -5,12 +5,30 @@ from strands import tool
 
 from app.agent.fixture_model import fixture_advice
 from app.assessment import assess
-from app.domain.models import AgentAdvice, CaseEvent, MessageRequest, ScamCase
+from app.domain.models import AgentAdvice, CaseEvent, EvidenceCheck, MessageRequest, ScamCase
+from app.reporting import build_local_report
 from app.storage.sqlite import SQLiteStore
 from app.tools.evidence import check_evidence, extract_claims
 from app.tools.redaction import redact_text
 
 REPORT_APPROVAL_ID = "generate-local-report"
+
+
+def _prioritize_checks(
+    checks: list[EvidenceCheck], advice: AgentAdvice
+) -> tuple[list[EvidenceCheck], AgentAdvice]:
+    """Advisory order never moves a no-signal check ahead of warnings or unknowns."""
+    known_ids = {check.id for check in checks}
+    valid_ids = list(
+        dict.fromkeys(item for item in advice.prioritized_check_ids if item in known_ids)
+    )
+    priority = {check_id: index for index, check_id in enumerate(valid_ids)}
+    severity = {"risky": 0, "unknown": 1, "safe": 2}
+    ordered = sorted(
+        checks,
+        key=lambda check: (severity[check.result], priority.get(check.id, len(priority))),
+    )
+    return ordered, advice.model_copy(update={"prioritized_check_ids": valid_ids})
 
 
 class Advisor(Protocol):
@@ -57,6 +75,7 @@ class ScamWorkflow:
             claim.model_copy(update={"text": redact_text(claim.text)}) for claim in raw_claims
         ]
         advice = self.advisor.advise(redacted_request)
+        checks, advice = _prioritize_checks(checks, advice)
         case = ScamCase(
             id=f"case-{uuid.uuid4().hex[:12]}",
             status="waiting_for_approval",
@@ -69,7 +88,9 @@ class ScamWorkflow:
             assessment=assessment,
             advice=advice,
             events=[
-                CaseEvent(kind="message_redacted", summary="Sensitive fields redacted locally"),
+                CaseEvent(
+                    kind="message_redacted", summary="Detected sensitive fields masked locally"
+                ),
                 CaseEvent(kind="claims_extracted", summary=f"Extracted {len(claims)} claims"),
                 CaseEvent(
                     kind="checks_completed", summary=f"Completed {len(checks)} offline checks"
@@ -115,18 +136,9 @@ class ScamWorkflow:
                     ],
                 }
             )
-            self.store.save_report(case.id, report)
-        self.store.save_case(revised)
+        self.store.finalize_case(revised)
         return revised
 
     @staticmethod
     def _build_report(case: ScamCase) -> str:
-        reasons = "\n".join(f"- {reason}" for reason in case.assessment.reasons)
-        steps = "\n".join(f"- {step}" for step in case.assessment.safety_steps)
-        return (
-            f"# ScamShield report: {case.id}\n\n"
-            f"Assessment: {case.assessment.level.replace('_', ' ').title()} "
-            f"({case.assessment.score}/100)\n\n"
-            f"## Why\n{reasons}\n\n## Safer next steps\n{steps}\n\n"
-            "Generated locally from redacted evidence. This is guidance, not a guarantee."
-        )
+        return build_local_report(case)

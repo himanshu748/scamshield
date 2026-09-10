@@ -61,3 +61,83 @@ def test_only_redacted_content_reaches_advisor_and_storage(tmp_path) -> None:
     assert "555 0198" not in case.model_dump_json()
     assert advisor.seen is not None
     assert "555 0198" not in advisor.seen.sender
+
+
+def test_decision_and_report_are_atomic_across_connections(tmp_path) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+
+    path = tmp_path / "race.sqlite3"
+    store = SQLiteStore(path)
+    workflow = ScamWorkflow(store=store)
+    case = workflow.analyze(suspicious_message())
+    other = ScamWorkflow(store=SQLiteStore(path))
+
+    def decide(worker, choice):
+        try:
+            return worker.decide(case.id, approval_id=REPORT_APPROVAL_ID, choice=choice)
+        except ValueError:
+            return None
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [
+            pool.submit(decide, workflow, "approved"),
+            pool.submit(decide, other, "rejected"),
+        ]
+        results = [future.result() for future in futures]
+    assert sum(result is not None for result in results) == 1
+    saved = store.get_case(case.id)
+    assert saved is not None
+    assert store.report_count(case.id) == (1 if saved.status == "report_generated" else 0)
+
+
+def test_explicit_secrets_and_url_tokens_never_reach_storage_or_advisor(tmp_path) -> None:
+    class RecordingAdvisor:
+        def advise(self, request):
+            assert "secret-value" not in request.model_dump_json()
+            assert "123456" not in request.model_dump_json()
+            return FixtureAdvisor().advise(request)
+
+    from app.agent.orchestrator import FixtureAdvisor
+
+    store = SQLiteStore(tmp_path / "secrets.sqlite3")
+    case = ScamWorkflow(store=store, advisor=RecordingAdvisor()).analyze(
+        MessageRequest(
+            sender="Sender",
+            content=(
+                "OTP 123456; password: secret-value; "
+                "https://example.com/secret-value?token=secret-value"
+            ),
+            received_at=datetime.now(UTC),
+        )
+    )
+    assert "secret-value" not in case.model_dump_json()
+    assert "123456" not in case.model_dump_json()
+    saved = store.get_case(case.id)
+    assert saved is not None and "secret-value" not in saved.model_dump_json()
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Verification code:123456",
+        "Verification code=123456",
+        "Passcode 654321",
+    ],
+)
+def test_named_codes_do_not_reach_advisor_or_saved_case(tmp_path, message) -> None:
+    from app.agent.orchestrator import FixtureAdvisor
+
+    class RecordingAdvisor:
+        def advise(self, request):
+            assert "123456" not in request.model_dump_json()
+            assert "654321" not in request.model_dump_json()
+            return FixtureAdvisor().advise(request)
+
+    store = SQLiteStore(tmp_path / "codes.sqlite3")
+    case = ScamWorkflow(store=store, advisor=RecordingAdvisor()).analyze(
+        MessageRequest(sender="Sender", content=message, received_at=datetime.now(UTC))
+    )
+    saved = store.get_case(case.id)
+    assert saved is not None
+    serialized = saved.model_dump_json()
+    assert "123456" not in serialized and "654321" not in serialized

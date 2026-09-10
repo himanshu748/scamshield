@@ -5,7 +5,6 @@ from app.domain.models import Claim, EvidenceCheck, MessageRequest
 
 URL_PATTERN = re.compile(r"https?://[^\s]+", re.IGNORECASE)
 PHONE_PATTERN = re.compile(r"(?:\+?\d[\d\s().-]{7,}\d)")
-OFFICIAL_DOMAINS = {"northwindbank.example", "postal.example"}
 
 
 def extract_claims(request: MessageRequest) -> list[Claim]:
@@ -53,30 +52,40 @@ def check_evidence(request: MessageRequest, claims: list[Claim]) -> list[Evidenc
             EvidenceCheck(
                 id="check-url",
                 label="Link request",
-                finding="No web link found",
+                finding="No explicit HTTP(S) link found; disguised or bare domains may be missed",
                 source="Local parser",
                 result="safe",
             )
         )
     for index, claim in enumerate(url_claims, start=1):
-        hostname = (urlparse(claim.text).hostname or "").lower()
-        official = hostname in OFFICIAL_DOMAINS
-        suspicious = "xn--" in hostname or hostname.count("-") >= 2 or not official
-        domain_status = (
-            "an official fixture domain" if official else "not an official fixture domain"
-        )
+        try:
+            hostname = (urlparse(claim.text).hostname or "").lower()
+        except ValueError:
+            hostname = ""
         checks.append(
             EvidenceCheck(
                 id=f"check-domain-{index}",
                 label="Domain identity",
-                finding=f"{hostname or 'Invalid host'} is {domain_status}",
-                source="Offline domain allow-list",
-                result="safe" if official else ("risky" if suspicious else "unknown"),
+                finding=(
+                    f"Ownership of {hostname or 'this invalid host'} has not been verified. "
+                    "A domain name alone does not establish trust."
+                ),
+                source="Local URL parsing; no reputation lookup",
+                result="unknown",
             )
         )
     lowered = request.content.lower()
     pressure = any(
-        token in lowered for token in ("urgent", "immediately", "suspend", "within 1 hour")
+        token in lowered
+        for token in (
+            "urgent",
+            "immediately",
+            "suspend",
+            "within 1 hour",
+            "30 minutes",
+            "account will close",
+            "act now",
+        )
     )
     checks.append(
         EvidenceCheck(
@@ -89,9 +98,7 @@ def check_evidence(request: MessageRequest, claims: list[Claim]) -> list[Evidenc
             result="risky" if pressure else "safe",
         )
     )
-    credential = any(
-        token in lowered for token in ("verify your identity", "password", "otp", "pin")
-    )
+    credential = bool(re.search(r"\b(?:verify your identity|password|otp|pin)\b", lowered))
     checks.append(
         EvidenceCheck(
             id="check-credential",
@@ -103,15 +110,18 @@ def check_evidence(request: MessageRequest, claims: list[Claim]) -> list[Evidenc
             result="risky" if credential else "safe",
         )
     )
-    known_sender = request.sender.lower() in {"northwind bank", "campus library", "postal service"}
+    known_sender = request.sender_confirmed
     checks.append(
         EvidenceCheck(
             id="check-sender",
             label="Sender verification",
-            finding="Display name matches a known fixture contact"
+            finding=(
+                "You reported independently confirming the sender; "
+                "this is not technical authentication"
+            )
             if known_sender
-            else "Sender is not a known fixture contact",
-            source="Local contact fixture",
+            else "Sender identity is unverified; display names can be copied",
+            source="User-provided context",
             result="safe" if known_sender else "unknown",
         )
     )

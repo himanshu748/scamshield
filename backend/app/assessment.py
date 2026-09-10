@@ -4,6 +4,7 @@ from app.domain.models import EvidenceCheck, RiskAssessment
 def assess(checks: list[EvidenceCheck]) -> RiskAssessment:
     risky = [check for check in checks if check.result == "risky"]
     safe = [check for check in checks if check.result == "safe"]
+    unknown = [check for check in checks if check.result == "unknown"]
     sender_verified = any(check.id == "check-sender" and check.result == "safe" for check in checks)
     if len(risky) >= 2:
         return RiskAssessment(
@@ -18,7 +19,7 @@ def assess(checks: list[EvidenceCheck]) -> RiskAssessment:
                 "Report and block the sender if the organization confirms fraud.",
             ],
         )
-    if not risky and len(safe) >= 3 and sender_verified:
+    if not risky and not unknown and len(safe) >= 3 and sender_verified:
         return RiskAssessment(
             level="low_risk",
             score=14,
@@ -30,7 +31,8 @@ def assess(checks: list[EvidenceCheck]) -> RiskAssessment:
         level="needs_context",
         score=46,
         confidence="low",
-        reasons=["The available evidence is incomplete or mixed."],
+        reasons=[check.finding for check in [*risky, *unknown][:4]]
+        or ["The available evidence is incomplete or mixed."],
         safety_steps=[
             "Pause before replying or opening links.",
             "Verify the sender through a known official channel.",

@@ -8,6 +8,7 @@
   --line: oklch(82% 0.018 25);
   --line-strong: oklch(62% 0.022 25);
   --risk: oklch(49% 0.16 32);
+  --on-risk: white;
   --risk-soft: oklch(92% 0.035 32);
   --safe: oklch(43% 0.085 145);
   --safe-soft: oklch(92% 0.035 145);
@@ -16,6 +17,15 @@
   --link: oklch(45% 0.13 255);
   --serif: Iowan Old Style, Palatino Linotype, Book Antiqua, Palatino, Georgia, serif;
   --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Tight field relationships, open reading groups, then section separation. */
+  --space-field: 8px;
+  --space-inline: 12px;
+  --space-group: 16px;
+  --space-block: 24px;
+  --space-section: 32px;
+  --space-page: 48px;
+  --action-shadow: 0 3px 7px color-mix(in srgb, var(--ink) 18%, transparent);
+  --action-shadow-pressed: 0 1px 2px color-mix(in srgb, var(--ink) 16%, transparent);
 }
 
 :root[data-theme="dark"] {
@@ -28,6 +38,7 @@
   --line: oklch(34% 0.018 25);
   --line-strong: oklch(53% 0.022 25);
   --risk: oklch(72% 0.14 32);
+  --on-risk: oklch(20% 0.025 25);
   --risk-soft: oklch(31% 0.065 32);
   --safe: oklch(76% 0.09 145);
   --safe-soft: oklch(30% 0.045 145);

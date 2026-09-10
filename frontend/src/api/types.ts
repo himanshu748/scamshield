@@ -2,6 +2,7 @@ export type Scenario = "high-risk" | "needs-context" | "low-risk";
 export type RiskLevel = "high_risk" | "needs_context" | "low_risk";
 
 export interface MessageRequest {
+  sender_confirmed?: boolean;
   channel: "sms" | "email" | "chat";
   sender: string;
   content: string;

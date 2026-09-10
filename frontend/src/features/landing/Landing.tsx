@@ -1,4 +1,5 @@
 import { AlertIcon, CheckIcon, ContextIcon, FileIcon, SearchIcon, ShieldIcon } from "../../ui/Icons";
+import { InteractivePreview } from "./InteractivePreview";
 
 const STAGES = [
   {
@@ -14,7 +15,7 @@ const STAGES = [
   {
     kicker: "Stage 3",
     title: "Check offline, never visit",
-    body: "Suspicious links are parsed as text with urllib.parse. No URL is opened, no sender is contacted and no message content leaves the machine.",
+    body: "Suspicious links are parsed as text. No URL is opened and no sender is contacted. Checks run locally; if model advice is enabled, redacted message text goes to your configured model provider.",
   },
   {
     kicker: "Stage 4",
@@ -29,7 +30,7 @@ const STAGES = [
 ];
 
 const BOUNDARIES = [
-  { title: "Nothing is transmitted", body: "No report, message or notification is ever sent. The demo makes no external requests in fixture mode." },
+  { title: "No automatic reporting", body: "No report or reply is sent to the sender. Fixture mode makes no external requests. Optional model advice sends redacted text to the configured provider; review it for sensitive details first." },
   { title: "Links are never opened", body: "URL handling is text parsing only. The agent cannot browse a suspicious link or reply to a sender." },
   { title: "Only redacted text is stored", body: "Redaction runs before the Strands input and before SQLite persistence, not after." },
   { title: "Guidance, not a guarantee", body: "The risk score is an assessment from visible local checks. It is presented as evidence to weigh, not a verdict to obey." },
@@ -40,16 +41,15 @@ export function Landing({ onStart }: { onStart: () => void }) {
   return (
     <main id="main" className="calm-landing">
       <section className="calm-hero" aria-labelledby="hero-title">
-        <p className="calm-eyebrow"><ShieldIcon />Good Neighbor Agents · Agents for Humans</p>
+        <div className="hero-copy">
         <h2 id="hero-title">Take a breath before you answer that message.</h2>
         <p className="hero-lede">
-          Scam messages work by rushing you. ScamShield creates a deliberate pause: it masks the
-          sensitive parts, lays out exactly what the message claims, shows every check behind the
-          answer, and tells you plainly what it is not sure about.
+          Check a suspicious message without opening its links. ScamShield masks sensitive details,
+          explains the warning signs, and shows where more context is needed.
         </p>
         <div className="hero-actions">
           <button type="button" className="primary-action" onClick={onStart}>
-            <SearchIcon />Try the demo
+            <SearchIcon />Check a message
           </button>
           <a className="ghost-action" href="#stages-title">See how it checks</a>
         </div>
@@ -60,6 +60,8 @@ export function Landing({ onStart }: { onStart: () => void }) {
             network requests and nothing sent anywhere.
           </span>
         </p>
+        </div>
+        <InteractivePreview />
       </section>
 
       <section className="calm-problem" aria-labelledby="problem-title">
@@ -120,9 +122,9 @@ export function Landing({ onStart }: { onStart: () => void }) {
               structured output and read-only tools.
             </p>
             <p>
-              An <strong>Amazon Bedrock</strong> model provider is available as an opt-in, configured
-              with environment variables in your own AWS account, with each response capped at 512
-              tokens. Fixture mode is the default and the recommended path.
+              Model advice is opt-in through <strong>Amazon Bedrock</strong> or a tool-capable
+              OpenAI-compatible endpoint. Credentials stay on the server. Each response is capped
+              at 512 tokens; this is not a spending cap. Fixture mode is the default.
             </p>
             <p className="calm-caveat">
               <AlertIcon />
@@ -167,7 +169,7 @@ export function Landing({ onStart }: { onStart: () => void }) {
           and watch the evidence change the result.
         </p>
         <button type="button" className="primary-action" onClick={onStart}>
-          <SearchIcon />Try the demo
+          <SearchIcon />Check a message
         </button>
       </section>
 

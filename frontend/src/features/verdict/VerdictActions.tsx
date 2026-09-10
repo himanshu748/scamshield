@@ -10,14 +10,21 @@ interface Props {
 }
 
 export function VerdictActions({ activeCase, busy, onDecision }: Props) {
+  function downloadReport() {
+    if (!activeCase.report) return;
+    const url = URL.createObjectURL(new Blob([activeCase.report], { type: "text/markdown;charset=utf-8" }));
+    const a = document.createElement("a"); a.href = url; a.download = activeCase.id + ".md"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
   const level = activeCase.assessment.level;
   return (
-    <aside className={`verdict-edge ${level}`} aria-label="Verdict and safer actions">
-      <div className="section-kicker"><span>3</span> Verdict &amp; actions</div>
+    <aside id="verdict-actions" className={`verdict-edge ${level}`} aria-label="Verdict and safer actions">
+      <h2 className="workspace-section-title">Verdict &amp; actions</h2>
       <div className="verdict-mark">{level === "high_risk" ? <AlertIcon size={38} /> : level === "needs_context" ? <ContextIcon /> : <CheckIcon />}</div>
-      <h2>{LABELS[level]}</h2>
-      <p className="verdict-summary">{level === "high_risk" ? "This message is likely a scam." : level === "low_risk" ? "No strong scam signal was found." : "There is not enough evidence to decide safely."}</p>
-      <div className="score-line"><span>Risk score</span><strong>{activeCase.assessment.score} / 100</strong></div>
+      <h3 className="verdict-title">{LABELS[level]}</h3>
+      <p className="verdict-summary">{level === "high_risk" ? "Multiple warning signs need your attention." : level === "low_risk" ? "No strong scam signal was found. That does not verify the message is safe." : "There is not enough evidence to decide safely."}</p>
+      <div className="score-line"><span>Rule-based risk index</span><strong>{activeCase.assessment.score} / 100</strong></div>
+      <p className="score-explanation">A local rule index, not the probability of fraud. Sender identity and site reputation are not independently verified.</p>
       <section className="reason-block"><h3>Why</h3><ul>{activeCase.assessment.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul></section>
       <section className="steps-block"><h3>What you can do</h3><ol>{activeCase.assessment.safety_steps.map((step) => <li key={step}>{step}</li>)}</ol></section>
       {activeCase.status === "waiting_for_approval" ? (
@@ -27,7 +34,7 @@ export function VerdictActions({ activeCase, busy, onDecision }: Props) {
           <button className="text-action" type="button" disabled={busy} onClick={() => onDecision("rejected")}>Skip report</button>
         </section>
       ) : activeCase.status === "report_generated" ? (
-        <section className="report-result" aria-live="polite"><CheckIcon /><div><h3>Local report ready</h3><p>Saved to this demo case. Nothing was transmitted.</p></div><details><summary>Preview report</summary><pre>{activeCase.report}</pre></details></section>
+        <section className="report-result" aria-live="polite"><CheckIcon /><div><h3>Local report ready</h3><p>Saved to this case. Nothing was transmitted.</p></div><button className="download-report" type="button" onClick={downloadReport}>Download report</button><details><summary>Preview report</summary><pre>{activeCase.report}</pre></details></section>
       ) : <section className="report-result"><div><h3>No report generated</h3><p>The case remains available locally.</p></div></section>}
     </aside>
   );

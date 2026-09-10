@@ -7,8 +7,10 @@ from pydantic import BaseModel
 
 from app.agent.model import AgentCoreAdvisor, StrandsAdvisor, create_strands_agent
 from app.agent.orchestrator import ScamWorkflow
+from app.agent.provider import create_provider_model, validate_provider_configuration
 from app.config import Settings
 from app.domain.models import MessageRequest, ScamCase
+from app.http_contract import LOCAL_ORIGIN_PATTERN, install_http_contract, runtime_metadata
 from app.storage.sqlite import SQLiteStore
 
 
@@ -36,6 +38,7 @@ def demo_messages() -> dict[str, MessageRequest]:
             content="Can you call me about the delivery when you are free?",
         ),
         "low-risk": MessageRequest(
+            sender_confirmed=True,
             channel="sms",
             sender="Campus Library",
             received_at=datetime.fromisoformat("2026-09-03T09:44:00+00:00"),
@@ -46,13 +49,17 @@ def demo_messages() -> dict[str, MessageRequest]:
 
 def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = None) -> FastAPI:
     active_settings = settings or Settings()
+    validate_provider_configuration(active_settings)
     application = FastAPI(title="ScamShield", version="0.1.0")
     application.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-        allow_methods=["GET", "POST"],
+        allow_origin_regex=LOCAL_ORIGIN_PATTERN,
+        allow_methods=["GET", "POST", "DELETE"],
         allow_headers=["Content-Type"],
+        expose_headers=["X-Request-ID"],
     )
+    install_http_contract(application)
     active_store = store or SQLiteStore(active_settings.database_path)
     advisor = None
     if not active_settings.fixture_mode:
@@ -60,23 +67,32 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
             advisor = AgentCoreAdvisor(
                 active_settings.agentcore_runtime_arn, active_settings.aws_region
             )
-        elif active_settings.bedrock_model_id is None:
+        elif active_settings.selected_model_id is None:
             raise ValueError("BEDROCK_MODEL_ID is required when fixture mode is disabled")
         else:
             advisor = StrandsAdvisor(
                 create_strands_agent(
-                    model_id=active_settings.bedrock_model_id,
+                    model_id=active_settings.selected_model_id,
+                    provider_model=create_provider_model(active_settings),
                     region_name=active_settings.aws_region,
                 )
             )
     workflow = ScamWorkflow(store=active_store, advisor=advisor)
+    application.state.settings = active_settings
+    application.state.store = active_store
+    application.state.workflow = workflow
 
     @application.get("/api/health")
-    async def health() -> dict[str, str | bool]:
+    async def health() -> dict[str, str | bool | int]:
         return {
             "service": "scamshield",
             "status": "ok",
             "fixture_mode": active_settings.fixture_mode,
+            **runtime_metadata(
+                fixture_mode=active_settings.fixture_mode,
+                runtime_arn=active_settings.agentcore_runtime_arn,
+                provider=active_settings.llm_provider,
+            ),
         }
 
     @application.get("/api/demo-messages/{scenario}", response_model=MessageRequest)
@@ -87,18 +103,28 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
         return message
 
     @application.post("/api/cases", response_model=ScamCase, status_code=201)
-    async def analyze(request: MessageRequest) -> ScamCase:
+    def analyze(request: MessageRequest) -> ScamCase:
         return workflow.analyze(request)
 
+    @application.get("/api/cases", response_model=list[ScamCase])
+    def list_cases() -> list[ScamCase]:
+        return active_store.list_cases()
+
+    @application.delete("/api/cases/{case_id}")
+    def delete_case(case_id: str) -> dict[str, bool]:
+        if not active_store.delete_case(case_id):
+            raise HTTPException(status_code=404, detail="case not found")
+        return {"deleted": True}
+
     @application.get("/api/cases/{case_id}", response_model=ScamCase)
-    async def get_case(case_id: str) -> ScamCase:
+    def get_case(case_id: str) -> ScamCase:
         case = active_store.get_case(case_id)
         if case is None:
             raise HTTPException(status_code=404, detail="case not found")
         return case
 
     @application.post("/api/cases/{case_id}/decision", response_model=ScamCase)
-    async def decide(case_id: str, decision: DecisionRequest) -> ScamCase:
+    def decide(case_id: str, decision: DecisionRequest) -> ScamCase:
         try:
             return workflow.decide(
                 case_id, approval_id=decision.approval_id, choice=decision.choice
@@ -109,7 +135,7 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
             raise HTTPException(status_code=409, detail=str(error)) from error
 
     @application.get("/api/cases/{case_id}/report-count")
-    async def report_count(case_id: str) -> dict[str, int]:
+    def report_count(case_id: str) -> dict[str, int]:
         return {"count": active_store.report_count(case_id)}
 
     if active_settings.serve_frontend:
@@ -121,6 +147,7 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
             application,
             fixture_mode=active_settings.fixture_mode,
             directory=Path(__file__).resolve().parents[2] / "frontend" / "dist",
+            local_live_ui=active_settings.local_live_ui,
         )
 
     return application
