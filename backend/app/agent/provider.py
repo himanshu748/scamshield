@@ -9,11 +9,7 @@ def validate_provider_configuration(settings: Settings) -> None:
     if settings.fixture_mode:
         return
     if settings.agentcore_runtime_arn:
-        if settings.llm_provider != "bedrock":
-            raise ValueError(
-                "AgentCore currently requires the Bedrock runtime recipe; "
-                "clear runtime ARN for an external model"
-            )
+        # Model credentials belong to the remote runtime, not its caller.
         return
     if settings.llm_provider == "bedrock":
         if not settings.bedrock_model_id:
@@ -54,6 +50,13 @@ def create_provider_model(settings: Settings):
         return None  # Preserve the existing Bedrock construction and defaults.
     from strands.models.openai import OpenAIModel
 
+    params = {"max_tokens": 512, "temperature": 0.0}
+    if (
+        urlsplit(settings.llm_base_url).hostname == "api.groq.com"
+        and settings.llm_model_id in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}
+    ):
+        # Leave room for complete structured tool arguments within the response budget.
+        params["reasoning_effort"] = "low"
     return OpenAIModel(
         client_args={
             "base_url": settings.llm_base_url,
@@ -63,5 +66,5 @@ def create_provider_model(settings: Settings):
         },
         model_id=settings.llm_model_id,
         stream=False,
-        params={"max_tokens": 512, "temperature": 0.0},
+        params=params,
     )

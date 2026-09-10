@@ -38,6 +38,7 @@ const BOUNDARIES = [
 ];
 
 export function Landing({ onStart }: { onStart: () => void }) {
+  const hosted = import.meta.env.VITE_HOSTED === "true";
   return (
     <main id="main" className="calm-landing">
       <section className="calm-hero" aria-labelledby="hero-title">
@@ -56,8 +57,7 @@ export function Landing({ onStart }: { onStart: () => void }) {
         <p className="hero-assurance">
           <ShieldIcon />
           <span>
-            Runs entirely on your machine in fixture mode. No AWS account, no model spend, no
-            network requests and nothing sent anywhere.
+            {hosted ? "AI is configured through AWS AgentCore and Groq. Redacted text is sent for advice; links are never opened. Use fictional or non-sensitive inputs." : "Runs entirely on your machine in fixture mode. No AWS account, no model spend, no network requests and nothing sent anywhere."}
           </span>
         </p>
         </div>
@@ -104,7 +104,6 @@ export function Landing({ onStart }: { onStart: () => void }) {
         <ol className="stage-list">
           {STAGES.map((stage) => (
             <li key={stage.title}>
-              <p className="stage-kicker">{stage.kicker}</p>
               <h3>{stage.title}</h3>
               <p className="stage-body">{stage.body}</p>
             </li>
@@ -117,20 +116,18 @@ export function Landing({ onStart }: { onStart: () => void }) {
         <div className="calm-split">
           <div className="calm-prose">
             <p>
-              A FastAPI service, a local SQLite case store and a React investigation workspace. The
+              A FastAPI service, a SQLite case store and a React investigation workspace. The
               reasoning step uses the open-source <strong>Strands Agents SDK</strong> with typed
               structured output and read-only tools.
             </p>
             <p>
-              Model advice is opt-in through <strong>Amazon Bedrock</strong> or a tool-capable
-              OpenAI-compatible endpoint. Credentials stay on the server. Each response is capped
-              at 512 tokens; this is not a spending cap. Fixture mode is the default.
+              {hosted ? "This hosted build uses Groq through AWS AgentCore. No model key is needed from you. " : "Model advice is opt-in through Amazon Bedrock or a tool-capable OpenAI-compatible endpoint. "}
+              Credentials stay on the server. Each response is capped at 512 tokens; this is not a spending cap.
             </p>
             <p className="calm-caveat">
               <AlertIcon />
               <span>
-                This repository is a local application. It does not claim an Amazon Bedrock
-                AgentCore deployment, and in fixture mode it makes no external requests at all.
+                {hosted ? "Cases are stored on the server and tied to your browser session. Redacted text reaches the model provider; suspicious links are never visited. Use fictional or non-sensitive messages." : "The local build defaults to fixture mode, with no external model requests. AgentCore hosting is configured separately."}
               </span>
             </p>
           </div>

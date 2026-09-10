@@ -88,6 +88,7 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
             "service": "scamshield",
             "status": "ok",
             "fixture_mode": active_settings.fixture_mode,
+            "model_configured": bool(active_settings.selected_model_id),
             **runtime_metadata(
                 fixture_mode=active_settings.fixture_mode,
                 runtime_arn=active_settings.agentcore_runtime_arn,

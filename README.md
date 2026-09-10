@@ -1,6 +1,8 @@
 # ScamShield
 
-[Connect a model](docs/ACTIVATION.md) · [Verified Qwen workflows](docs/QWEN-VERIFICATION.md) · [Submission checklist](docs/RELEASE-CHECKLIST.md) · [Judging evidence](docs/JUDGING.md)
+[Open the hosted app](https://scamshield.34-233-68-117.sslip.io/#overview) · [Judge access and limits](docs/HOSTED.md)
+
+[Groq + AgentCore setup](docs/GROQ-AGENTCORE.md) · [Verified cloud workflow](docs/GROQ-VERIFICATION.md) · [Submission checklist](docs/RELEASE-CHECKLIST.md) · [Judging evidence](docs/JUDGING.md)
 
 For the real-input, local-first workspace and its verified limits, see [Local product workflow](LOCAL-PRODUCT.md).
 
@@ -42,11 +44,18 @@ python3 scripts/demo.py
 
 Open `http://127.0.0.1:8000`. This installs locked dependencies, builds the frontend, and serves the UI and API from one local process. It forces scripted fixture mode even if your environment enables AWS, uses temporary demo data, and removes that data when stopped with Ctrl+C. First-time dependency installation needs internet access; the demo itself does not call a model. Use `--port 8201` to avoid a port conflict. After installation, `--skip-install` reuses dependencies.
 
-This command runs the scripted model. Real Qwen3-8B inference through Strands was verified on September 9; see [the workflow evidence](docs/QWEN-VERIFICATION.md). The private Modal endpoint was then stopped at the owner's request. Bedrock and AgentCore remain unverified. A judge must not be told that this free scripted run demonstrates live inference.
+This command runs the scripted model. The real application workflow through
+AgentCore, Strands and Groq GPT-OSS 20B passed on September 10; see
+[the evidence](docs/GROQ-VERIFICATION.md). The earlier Qwen endpoint on Modal
+remains stopped. The free scripted command does not demonstrate live inference.
 
 ## Real model setup
 
-The backend supports explicit Bedrock, AgentCore, or OpenAI-compatible configuration, with no silent fallback to fixtures. [Qwen on Modal](docs/MODAL.md) documents the tested provider, authentication, spending controls and cold-start procedure. [External model configuration](docs/EXTERNAL-MODELS.md) also supports a compatible endpoint from another authorized provider.
+The backend supports explicit Bedrock, AgentCore, or OpenAI-compatible configuration,
+with no silent fallback to fixtures. Use [Groq on AgentCore](docs/GROQ-AGENTCORE.md)
+for the verified cloud route, or [external model configuration](docs/EXTERNAL-MODELS.md)
+for direct inference. The model probe below tests direct inference; use the workflow
+smoke check to verify a configured AgentCore runtime.
 
 After configuring the ignored `backend/.env`, run:
 
@@ -57,13 +66,13 @@ backend/.venv/bin/python scripts/model_workflow_smoke.py --allow-paid-requests
 backend/.venv/bin/python scripts/run.py serve --port 8000 --allow-paid-requests
 ```
 
-The last three commands require an available funded endpoint. Do not run them against a deliberately stopped service or put provider credentials in the frontend. Public hosting and free real-model access for judges still need to be arranged; bring-your-own paid credentials is not a completed judge-access plan.
+The last three commands require an available funded endpoint. Do not run them against a deliberately stopped service or put provider credentials in the frontend. Judges can use the [hosted application](docs/HOSTED.md) without supplying credentials; hosted AI has bounded daily allowances.
 
 ## Architecture
 
-![Current provider and approval architecture](docs/architecture-current.png)
+![Deployed AgentCore, Strands and Groq architecture](docs/architecture-hosted.png)
 
-[Editable SVG](docs/architecture-current.svg). Use this PNG for the submission attachment.
+[Editable SVG](docs/architecture-hosted.svg). Use this hosted-architecture PNG for the submission attachment. Older diagrams document earlier provider configurations.
 
 ```text
 React investigation workspace
@@ -123,7 +132,9 @@ AWS_PROFILE=your-profile
 
 Verify current model access and pricing before enabling live mode. Response limits are not an account-wide spend cap; credits do not guarantee that a bank account cannot be charged. Redaction can miss personal details, so do not enter secrets.
 
-AWS usage may incur charges. Fixture mode is the recommended development and judging path. This repository does not claim an Amazon Bedrock AgentCore deployment; it integrates the open-source Strands Agents SDK with an optional Bedrock model provider.
+AWS usage may incur charges. Fixture mode provides offline development and testing.
+The verified AgentCore deployment hosts the Strands advisory step with Groq;
+redaction, deterministic checks, report approval and storage remain in the application.
 
 ## Verification
 
@@ -145,9 +156,12 @@ The live responsive review covered 390, 768 and 1440 pixel widths, keyboard appr
 
 ## Hackathon technology and outstanding requirements
 
-The free demo runs Strands with a scripted provider. Qwen3-8B on Modal was verified with real tool use and report approval. The backend redacts input before transmission and retains deterministic risk scoring. The optional AgentCore recipe is unverified. See [Qwen verification](docs/QWEN-VERIFICATION.md) and [AgentCore setup](docs/AGENTCORE.md).
+The local fixture demo runs Strands with a scripted provider. The real AgentCore → Strands
+→ Groq workflow passed with redacted input, read-only tools and report approval.
+The backend retains deterministic risk scoring. Public full-app hosting and credential-free judge
+access are verified with bounded allowances. See [hosted access](docs/HOSTED.md).
 
-The [qualification record](docs/QUALIFICATION.md) tracks public deliverables separately from local tests. The [architecture PNG](docs/architecture.png), [article draft](docs/BUILDER_POST.md) and [video outline](docs/DEMO_SCRIPT.md) exist locally; their publication and final submission have not been verified for this revision. Good Neighbor targets groups: this build supports an individual-to-helper handoff, not a shared community inbox or demonstrated organizational adoption.
+The [hosted architecture PNG](docs/architecture-hosted.png) documents the deployed build. The [narrated hosted walkthrough](https://youtu.be/6fsujlmzZRM) is public on YouTube. The final Devpost submission and optional Builder article publication remain separate, unverified steps. Good Neighbor targets groups: this build supports an individual-to-helper handoff, not a shared community inbox or demonstrated organizational adoption.
 
 ## Repository map
 

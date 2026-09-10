@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSurfaceNavigation } from "./useSurfaceNavigation";
 import { ConnectionDetails } from "../features/connection/ConnectionDetails";
 
 import { analyzeMessage, decideReport, getDemoMessage, listCases, removeCase } from "../api/client";
@@ -14,7 +15,6 @@ import { MessageIntake } from "../features/investigation/MessageIntake";
 import { SavedCases } from "../features/investigation/SavedCases";
 
 type ViewState = "idle" | "loading" | "ready" | "busy" | "error";
-type Surface = "landing" | "demo";
 
 const SCENARIOS: Array<{ id: Scenario; label: string; hint: string }> = [
   { id: "high-risk", label: "Bank impersonation", hint: "Urgent link + identity request" },
@@ -23,7 +23,9 @@ const SCENARIOS: Array<{ id: Scenario; label: string; hint: string }> = [
 ];
 
 export function App() {
-  const [surface, setSurface] = useState<Surface>(window.location.hash === "#overview" ? "landing" : "demo");
+  const storageLabel = import.meta.env.VITE_HOSTED === "true" ? "Private server case storage" : "Local case storage";
+  const tagline = import.meta.env.VITE_HOSTED === "true" ? "Check before you respond." : "Protecting you, locally.";
+  const { surface, openSurface } = useSurfaceNavigation();
   const [state, setState] = useState<ViewState>("idle");
   const [scenario, setScenario] = useState<Scenario>("high-risk");
   const [activeCase, setActiveCase] = useState<ScamCase | null>(null);
@@ -132,27 +134,27 @@ export function App() {
     return (
       <div className="app-shell">
         <header className="topbar landing-topbar">
-          <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>Protecting you, locally.</small></span></a>
+          <a href="#overview" onClick={(event) => { event.preventDefault(); openSurface("landing"); }} className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>{tagline}</small></span></a>
           <nav className="landing-nav" aria-label="Section navigation">
             <a href="#stages-title">How it checks</a>
             <a href="#architecture-title">Architecture</a>
             <a href="#boundaries-title">Boundaries</a>
           </nav>
-          <button type="button" className="nav-action" onClick={() => setSurface("demo")}>Check a message</button>
+          <button type="button" className="nav-action" onClick={() => openSurface("demo")}>Check a message</button>
           <button type="button" className="theme-action" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
         </header>
-        <Landing onStart={() => setSurface("demo")} />
+        <Landing onStart={() => openSurface("demo")} />
       </div>
     );
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell scamshield-workspace">
       <header className="topbar">
-        <a href="#main" className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>Protecting you, locally.</small></span></a>
+        <a href="#overview" onClick={(event) => { event.preventDefault(); openSurface("landing"); }} className="wordmark"><ShieldIcon size={28} /><span><h1>ScamShield</h1><small>{tagline}</small></span></a>
         <span className="case-id">{activeCase ? `Case ${activeCase.id.replace("case-", "SS-").toUpperCase()}` : "New investigation"}</span>
-        <span className="local-badge"><ShieldIcon />Local case storage</span>
-        <button type="button" className="nav-action subtle" disabled={busy} onClick={() => setSurface("landing")}>Back to overview</button>
+        <span className="local-badge"><ShieldIcon />{storageLabel}</span>
+        <button type="button" className="nav-action subtle" disabled={busy} onClick={() => openSurface("landing")}>Back to overview</button>
         <button type="button" className="theme-action" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={toggleTheme}><MoonIcon /></button>
       </header>
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useWalkthrough } from "./useWalkthrough";
 import { ContextIcon, FileIcon, ShieldIcon } from "../../ui/Icons";
 
 const SIGNALS = [
@@ -9,9 +10,10 @@ const SIGNALS = [
 
 export function InteractivePreview() {
   const [signal, setSignal] = useState(0);
+  const tour = useWalkthrough(setSignal);
   const current = SIGNALS[signal];
   return (
-    <aside className="message-preview interactive-preview" aria-label="Illustrative message check">
+    <aside ref={tour.preview} className="message-preview interactive-preview" aria-label="Illustrative message check">
       <div className="message-preview-caption"><FileIcon /><span>Illustrative preview · fictional message</span></div>
       <div className="message-paper">
         <p className="message-origin">SMS <span>Sender identity unverified</span></p>
@@ -19,9 +21,9 @@ export function InteractivePreview() {
         <p className="message-link-note"><ShieldIcon />Link shown as text. Never opened.</p>
       </div>
       <div className="signal-explorer">
-        <p>Choose a warning sign to inspect</p>
+        <div className="signal-heading"><p>Choose a warning sign to inspect</p><button className="walkthrough-play" type="button" onClick={tour.play} aria-pressed={tour.playing}>{tour.playing ? "Pause walkthrough" : "Play walkthrough"}</button></div>
         <div className="signal-controls" role="group" aria-label="Inspect warning signs">
-          {SIGNALS.map((item, index) => <button key={item.label} type="button" aria-pressed={signal === index} aria-controls="signal-explanation" onClick={() => setSignal(index)}>{item.label}</button>)}
+          {SIGNALS.map((item, index) => <button key={item.label} type="button" aria-pressed={signal === index} aria-controls="signal-explanation" onClick={() => { tour.stop(); setSignal(index); }}>{item.label}</button>)}
         </div>
         <div id="signal-explanation" className="signal-explanation" aria-live="polite" aria-atomic="true">
           <div key={signal}><h3>{current.title}</h3><p>{current.body}</p></div>

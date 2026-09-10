@@ -1,0 +1,82 @@
+/* ScamShield: a message to read carefully, with evidence beside it. */
+.calm-landing { max-width: 1280px; padding-inline: 40px; }
+.calm-landing .calm-hero { grid-template-columns: minmax(0, 1.2fr) minmax(0, .9fr); gap: 72px; padding: 56px 0 72px; align-items: start; }
+.calm-hero .hero-copy { grid-column: 2; grid-row: 1; padding-top: 44px; }
+.calm-hero #hero-title { font-size: clamp(40px, 4.1vw, 58px); max-width: 15ch; line-height: 1.08; }
+.calm-hero .hero-lede { margin-top: 24px; font-size: 16px; }
+.calm-hero .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 28px; }
+.calm-hero .hero-actions .primary-action { min-height: 52px; padding-inline: 24px; box-shadow: none; }
+.calm-hero .hero-assurance { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--line); }
+.calm-hero .message-preview { grid-column: 1; grid-row: 1; background: transparent; border: 0; border-radius: 0; max-width: none; width: 100%; }
+.message-preview .message-preview-caption { padding: 0 0 16px; border: 0; }
+.message-preview .message-paper { margin: 0 0 28px; padding: 28px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface); }
+.message-preview .message-origin { font-size: 12px; margin-bottom: 24px; }
+.message-preview .message-paper blockquote { font-size: clamp(24px, 2.5vw, 34px); line-height: 1.5; }
+.message-preview .message-link-note { margin-top: 24px; }
+.message-preview .signal-explorer { padding: 0; }
+.signal-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.signal-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+.walkthrough-play { padding: 8px 0; min-height: 44px; border: 0; border-bottom: 1px solid var(--line-strong); background: transparent; color: var(--link); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.walkthrough-play:hover { color: var(--ink); border-color: var(--ink); }
+.walkthrough-play[aria-pressed="true"] { color: var(--risk); }
+.message-preview .signal-controls { gap: 8px; }
+.message-preview .signal-controls button { background: transparent; border-color: var(--line-strong); border-radius: 6px; padding: 10px 12px; }
+.message-preview .signal-controls button[aria-pressed="true"] { background: var(--unknown-soft); border-color: var(--unknown); }
+.message-preview .signal-explanation { min-height: 140px; padding: 24px 0; }
+.message-preview .signal-explanation h3 { font-size: 23px; }
+.message-preview .signal-explanation p { font-size: 14px; }
+.message-preview .message-next { margin: 0; }
+.message-preview .message-preview-footer { background: transparent; color: var(--muted); padding: 16px 0 0; margin-top: 12px; border: 0; }
+.calm-landing .problem-row { display: block; }
+.calm-landing .problem-row article { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 40px; padding: 28px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+.calm-landing .problem-row article > svg { display: none; }
+.calm-landing .problem-row h3, .calm-landing .problem-row p { margin: 0; }
+.calm-landing .stage-list { display: block; }
+.calm-landing .stage-list li { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: 32px; padding: 24px 0; }
+.calm-landing .stage-list h3, .calm-landing .stage-body { margin: 0; }
+.calm-landing .calm-close { text-align: left; }
+.calm-landing .calm-close h2, .calm-landing .calm-close p { margin-left: 0; margin-right: 0; }
+.calm-landing .boundary-grid { display: block; }
+.calm-landing .boundary-grid li { border: 0; border-top: 1px solid var(--line); background: transparent; padding: 24px 0; }
+.calm-landing .boundary-grid li > div { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: 32px; }
+.scamshield-workspace .intake-case { grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); gap: 56px; max-width: 1180px; padding-top: 40px; }
+.scamshield-workspace .intake-copy { grid-column: 2; grid-row: 1; }
+.scamshield-workspace .intake-copy h1 { font-family: var(--serif); font-size: 36px; }
+.scamshield-workspace .intake-copy > p { font-size: 15px; }
+.scamshield-workspace .message-input-form { grid-column: 1; grid-row: 1; border: 1px solid var(--line-strong); box-shadow: none; padding: 32px; background: var(--surface); }
+.scamshield-workspace .message-input-form textarea { min-height: 230px; font-size: 18px; line-height: 1.65; }
+.scamshield-workspace .case-workspace { max-width: 1200px; margin: 0 auto; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "evidence verdict" "investigation investigation"; gap: 0 32px; border: 0; }
+.scamshield-workspace .evidence-rail, .scamshield-workspace .verdict-edge { padding: 28px; border: 0; border-bottom: 1px solid var(--line-strong); display: block; }
+.scamshield-workspace .evidence-rail { background: var(--surface); }
+.scamshield-workspace .evidence-rail blockquote { font-family: var(--serif); font-size: 22px; line-height: 1.65; padding: 0; border: 0; background: transparent; }
+.scamshield-workspace .investigation { padding: 36px 28px; }
+main:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) { .walkthrough-play { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .message-paper mark.selected-signal { animation: evidence-mark 450ms cubic-bezier(.16, 1, .3, 1); }
+  @keyframes evidence-mark { from { background-color: transparent; } to { background-color: var(--unknown-soft); } }
+}
+@media (max-width: 950px) {
+  .calm-landing { padding-inline: 28px; }
+  .calm-landing .calm-hero { gap: 36px; }
+  .calm-hero .hero-copy { padding-top: 0; }
+  .calm-hero #hero-title { font-size: 42px; }
+  .scamshield-workspace .intake-case { gap: 32px; padding-inline: 24px; }
+}
+@media (max-width: 700px) {
+  .calm-landing { padding-inline: 20px; }
+  .calm-landing .calm-hero { display: flex; flex-direction: column; padding-top: 32px; gap: 32px; }
+  .calm-hero #hero-title { font-size: 44px; }
+  .calm-hero .hero-actions { gap: 8px; }
+  .message-preview .message-paper { padding: 22px; }
+  .message-preview .message-paper blockquote { font-size: 25px; }
+  .signal-heading { flex-wrap: wrap; gap: 4px; }
+  .message-preview .signal-controls button { padding-inline: 9px; }
+  .calm-landing .problem-row article, .calm-landing .stage-list li { display: block; }
+  .calm-landing .boundary-grid li > div { display: block; }
+  .calm-landing .problem-row h3, .calm-landing .stage-list h3 { margin-bottom: 12px; }
+  .scamshield-workspace .intake-case { display: flex; flex-direction: column; padding: 28px 20px; gap: 20px; }
+  .scamshield-workspace .message-input-form { padding: 20px; width: 100%; }
+  .scamshield-workspace .case-workspace { display: flex; flex-direction: column; }
+  .scamshield-workspace .evidence-rail, .scamshield-workspace .verdict-edge, .scamshield-workspace .investigation { padding: 24px 20px; }
+}

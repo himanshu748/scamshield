@@ -12,6 +12,7 @@ def test_health_reports_fixture_mode(tmp_path) -> None:
         "service": "scamshield",
         "status": "ok",
         "fixture_mode": True,
+        "model_configured": False,
         "runtime_mode": "local",
         "model_access": "disabled",
         "storage_mode": "local_sqlite",

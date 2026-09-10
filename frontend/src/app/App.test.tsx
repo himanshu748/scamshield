@@ -169,7 +169,7 @@ describe("ScamShield landing", () => {
     expect(screen.getByRole("heading", { name: "What it will not do" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "No automatic reporting" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Links are never opened" })).toBeInTheDocument();
-    expect(screen.getByText(/does not claim an Amazon Bedrock\s+AgentCore deployment/)).toBeInTheDocument();
+    expect(screen.getByText(/AgentCore hosting is configured separately/)).toBeInTheDocument();
     expect(screen.getByText(/Runs entirely on your machine in fixture mode/)).toBeInTheDocument();
   });
 

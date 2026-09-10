@@ -72,9 +72,11 @@ def test_secret_is_redacted_and_blank_key_rejected():
         validate_provider_configuration(external(llm_api_key="   "))
 
 
-def test_external_cannot_masquerade_as_agentcore():
-    with pytest.raises(ValueError, match="AgentCore currently requires"):
-        validate_provider_configuration(external(agentcore_runtime_arn="runtime-placeholder"))
+def test_agentcore_caller_does_not_need_the_remote_provider_key():
+    settings = external(agentcore_runtime_arn="runtime-placeholder", llm_api_key=None)
+    validate_provider_configuration(settings)
+    with pytest.raises(ValueError, match="explicit direct-inference"):
+        create_provider_model(settings)
 
 
 def test_provider_is_explicit():
@@ -124,10 +126,21 @@ def test_app_wires_external_provider_and_reports_it_honestly(tmp_path, monkeypat
     assert response.json()["runtime_mode"] == "openai-compatible"
     assert response.json()["aws_calls_enabled"] is False
     assert response.json()["model_access"] == "not_verified"
+    assert response.json()["model_configured"] is True
     assert TEST_KEY not in response.text
     assert "model.example" not in response.text
     assert len(calls) == 1
     assert calls[0]["provider_model"].config["model_id"] == "test-model"
+
+
+def test_groq_reasoning_budget_leaves_room_for_structured_output():
+    model = create_provider_model(
+        external(llm_model_id="openai/gpt-oss-20b", llm_base_url="https://api.groq.com/openai/v1")
+    )
+    assert model.config["params"]["max_tokens"] == 512
+    assert model.config["params"]["reasoning_effort"] == "low"
+    other = create_provider_model(external(llm_model_id="openai/gpt-oss-20b"))
+    assert "reasoning_effort" not in other.config["params"]
 
 
 def mock_provider_http(monkeypatch, respond):
