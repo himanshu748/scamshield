@@ -161,7 +161,7 @@ The local fixture demo runs Strands with a scripted provider. The real AgentCore
 The backend retains deterministic risk scoring. Public full-app hosting and credential-free judge
 access are verified with bounded allowances. See [hosted access](docs/HOSTED.md).
 
-The [hosted architecture PNG](docs/architecture-hosted.png) documents the deployed build. The [narrated hosted walkthrough](https://youtu.be/6fsujlmzZRM) is public on YouTube. The final Devpost submission and optional Builder article publication remain separate, unverified steps. Good Neighbor targets groups: this build supports an individual-to-helper handoff, not a shared community inbox or demonstrated organizational adoption.
+The [hosted architecture PNG](docs/architecture-hosted.png) documents the deployed build. The [narrated hosted walkthrough](https://youtu.be/6fsujlmzZRM) is public on YouTube. The [Devpost entry](https://devpost.com/software/scamshield-h8tgx4) is submitted, and the [AWS Builder build article](https://builder.aws.com/content/3J8xiovOnHkDYikqHwRdSAc8iVi/agents-for-humans-building-scamshield-for-a-safer-message-handoff) is publicly published and linked in the submission. These publication states were verified on September 10, 2026. Good Neighbor targets groups: this build supports an individual-to-helper handoff, not a shared community inbox or demonstrated organizational adoption.
 
 ## Repository map
 
