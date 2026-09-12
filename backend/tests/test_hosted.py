@@ -31,6 +31,7 @@ def gateway(tmp_path, **kwargs):
             return {"saved": True}
 
         @app.post("/api/decision")
+        @app.post("/api/messages/preview")
         def decision():
             return {"approved": True}
 
@@ -106,6 +107,8 @@ def test_daily_quota_persists_and_does_not_block_approval(tmp_path):
     next_web.cookies.update(web.cookies)
     assert next_web.post("/api/plans", json={}).status_code == 429
     assert next_web.post("/api/decision", json={}).status_code == 200
+    assert next_web.post("/api/messages/preview", json={}).status_code == 200
+    assert next_web.get("/api/items").json() == ["saved"]
 
 
 def test_host_https_size_and_documentation_boundaries(tmp_path):

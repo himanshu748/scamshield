@@ -26,6 +26,9 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const listCases = () => request<ScamCase[]>("/api/cases");
+export const previewMessage = (message: MessageRequest) => request<MessageRequest>("/api/messages/preview", {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(message),
+});
 export const removeCase = (id: string) => request<{ deleted: boolean }>(`/api/cases/${encodeURIComponent(id)}`, { method: "DELETE" });
 
 export function getDemoMessage(scenario: Scenario) {

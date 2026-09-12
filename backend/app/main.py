@@ -12,6 +12,7 @@ from app.config import Settings
 from app.domain.models import MessageRequest, ScamCase
 from app.http_contract import LOCAL_ORIGIN_PATTERN, install_http_contract, runtime_metadata
 from app.storage.sqlite import SQLiteStore
+from app.tools.redaction import redact_request
 
 
 class DecisionRequest(BaseModel):
@@ -106,6 +107,11 @@ def create_app(settings: Settings | None = None, *, store: SQLiteStore | None = 
     @application.post("/api/cases", response_model=ScamCase, status_code=201)
     def analyze(request: MessageRequest) -> ScamCase:
         return workflow.analyze(request)
+
+    @application.post("/api/messages/preview", response_model=MessageRequest)
+    def preview_message(request: MessageRequest) -> MessageRequest:
+        # No advisor invocation, case record, message logging or URL requests.
+        return redact_request(request)
 
     @application.get("/api/cases", response_model=list[ScamCase])
     def list_cases() -> list[ScamCase]:

@@ -1,6 +1,8 @@
 import re
 from urllib.parse import urlsplit
 
+from app.domain.models import MessageRequest
+
 URL_PATTERN = re.compile(r"https?://[^\s<>]+", re.IGNORECASE)
 SECRET_PATTERN = re.compile(
     r"\b(password|passcode|otp|pin|one[- ]time (?:password|code)|"
@@ -60,4 +62,11 @@ def redact_text(value: str) -> str:
     redacted = EMAIL_PATTERN.sub(lambda match: f"{match.group(1)}•••{match.group(2)}", redacted)
     return ACCOUNT_PATTERN.sub(
         lambda match: match.group(0).replace(match.group(1), "••••"), redacted
+    )
+
+
+def redact_request(request: MessageRequest) -> MessageRequest:
+    """The same field masking for preview, model advice and case persistence."""
+    return request.model_copy(
+        update={"sender": redact_text(request.sender), "content": redact_text(request.content)}
     )

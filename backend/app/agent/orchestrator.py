@@ -9,7 +9,7 @@ from app.domain.models import AgentAdvice, CaseEvent, EvidenceCheck, MessageRequ
 from app.reporting import build_local_report
 from app.storage.sqlite import SQLiteStore
 from app.tools.evidence import check_evidence, extract_claims
-from app.tools.redaction import redact_text
+from app.tools.redaction import redact_request, redact_text
 
 REPORT_APPROVAL_ID = "generate-local-report"
 
@@ -65,12 +65,7 @@ class ScamWorkflow:
         raw_claims = extract_claims(request)
         checks = check_evidence(request, raw_claims)
         assessment = assess(checks)
-        redacted_request = request.model_copy(
-            update={
-                "sender": redact_text(request.sender),
-                "content": redact_text(request.content),
-            }
-        )
+        redacted_request = redact_request(request)
         claims = [
             claim.model_copy(update={"text": redact_text(claim.text)}) for claim in raw_claims
         ]

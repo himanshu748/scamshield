@@ -7,7 +7,7 @@ from app.agent.budget import ModelCallBudget, isolated_agent
 from app.agent.runtime_client import RuntimeClient
 from app.domain.models import AgentAdvice, MessageRequest
 from app.tools.evidence import check_evidence, extract_claims
-from app.tools.redaction import redact_text
+from app.tools.redaction import redact_request, redact_text
 
 SYSTEM_PROMPT = """You are ScamShield, an evidence-first consumer safety agent.
 Use only registered read-only tools. Separate facts from inference. Never claim certainty, contact a
@@ -32,9 +32,7 @@ def _context(request: MessageRequest) -> dict[str, Any]:
 
 
 def _redacted_request(request: MessageRequest) -> MessageRequest:
-    return request.model_copy(
-        update={"sender": redact_text(request.sender), "content": redact_text(request.content)}
-    )
+    return redact_request(request)
 
 
 @tool

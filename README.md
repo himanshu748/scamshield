@@ -22,6 +22,7 @@ The demo contains only fictional evidence and runs without an AWS account by def
 
 - Three deterministic demo outcomes: high risk, needs context and low risk.
 - Phone, email and account identifiers are redacted before persistent storage or agent reasoning.
+- Preview the masked sender and message before requesting analysis. The app server performs masking without an AI call or saved case; editing clears the preview. Automated redaction can miss identifying details.
 - Suspicious URLs are parsed as text and never opened.
 - Claims retain visible provenance instead of being presented as verified facts.
 - Local evidence checks expose their finding, source and result.
