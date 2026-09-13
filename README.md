@@ -190,6 +190,10 @@ docs/screenshots/        verified running-app captures
 
 This solo project was designed, implemented and tested with Codex as a development collaborator. Codex helped define the safety boundary, build the deterministic fixtures, connect Strands, create the responsive interface and verify submission claims against the code.
 
+## September 13 upgrade notes
+
+Read the [September 13 upgrade article on AWS Builder](https://builder.aws.com/content/3JDRj6Q6tozYTzEYjRCRr9TCETM/agents-for-humans-deadline-checks-privacy-previews-and-reviewable-patches) for the deadline checks, redaction preview, and review-evidence changes. The article is also linked in all three Devpost entries.
+
 ## License
 
 Apache-2.0. See `LICENSE`.
